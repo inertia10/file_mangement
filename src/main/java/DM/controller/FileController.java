@@ -3,11 +3,14 @@ package DM.controller;
 import DM.annotation.Login;
 import DM.constant.FileTypeEnum;
 import DM.entity.User;
+import DM.entity.User_fault;
+import DM.mapper.User_faultMapper;
 import DM.util.FileTypeUtil;
 import DM.util.CacheUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -31,13 +34,16 @@ import java.util.*;
 @Controller
 public class FileController {
 
+    @Autowired
+    private User_faultMapper userFaultMapper;
+
     private static final String SLASH = "/";
 
     @Value("${fs.dir}")
     private String fileDir;
 
-    @Value("${fs.uuidName}")
-    private Boolean uuidName;
+//    @Value("${fs.uuidName}")
+//    private Boolean uuidName;
 
     @Value("${fs.useSm}")
     private Boolean useSm;
@@ -104,7 +110,7 @@ public class FileController {
     @Login
     @ResponseBody
     @PostMapping("/file/upload")
-    public Map upload(@RequestParam MultipartFile file, @RequestParam String curPos) {
+    public Map upload(@RequestParam MultipartFile file, @RequestParam String curPos, User_fault user_fault) {
         curPos = curPos.substring(1) + SLASH;
         if (fileDir == null) {
             fileDir = SLASH;
@@ -132,6 +138,12 @@ public class FileController {
             outFile = new File(fileDir + path);
             index++;
         }
+
+        user_fault.setFileName(FileName);
+        user_fault.setPath(fileDir+curPos+FileName);
+        user_fault.setTime(TestSpecificTime);
+        userFaultMapper.addData(user_fault);
+        
         try {
             if (!outFile.getParentFile().exists()) {
                 outFile.getParentFile().mkdirs();

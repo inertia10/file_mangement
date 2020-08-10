@@ -52,6 +52,7 @@
         </li>
         <li><a id="share"><i class="layui-icon layui-icon-share"></i>&emsp;分享&emsp;</a></li>
         <li><a id="rename"><i class="layui-icon layui-icon-edit"></i>&emsp;重命名&emsp;</a></li>
+        <li><a id="attribute"><i class="layui-icon layui-icon-about"></i>&emsp;属性&emsp;</a></li>
     </ul>
 </div>
 
@@ -140,21 +141,21 @@
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验名称</label>\n' +
             '            <div class="layui-input-block">\n' +
-            '                <input type="text" name="name" value="" lay-verify="required" placeholder="请输入名称" class="layui-input" id="name">\n' +
+            '                <input type="text" name="FaultName" value="" lay-verify="required" placeholder="请输入名称" class="layui-input" id="FaultName">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验类型</label>\n' +
             '            <div class="layui-input-block">\n' +
-            '                <input type="text" name="testtype" value="" lay-verify="required" placeholder="请输入试验类型" class="layui-input" id="testtype">\n' +
+            '                <input type="text" name="TestType" value="" lay-verify="required" placeholder="请输入试验类型" class="layui-input" id="TestType">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验人员</label>\n' +
             '            <div class="layui-input-block">\n' +
-            '                <input type="text" name="person" value="" lay-verify="required" placeholder="请输入试验人员" class="layui-input" id="person">\n' +
+            '                <input type="text" name="member" value="" lay-verify="required" placeholder="请输入试验人员" class="layui-input" id="member">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
@@ -168,7 +169,7 @@
             '        <div class="layui-form-item layui-form-text">\n' +
             '            <label class="layui-form-label">试验程度</label>\n' +
             '            <div class="layui-input-block">\n' +
-            '                 <textarea name="degree" placeholder="请输入内容" class="layui-textarea"></textarea>\n' +
+            '                 <input type="text"  name="degree" value="" lay-verify="required" placeholder="请输入内容" class="layui-input" id="degree">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
@@ -181,12 +182,12 @@
             '                <br/>\n' +
             '            <label class="layui-form-label" >压力</label>\n' +
             '            <div class="layui-input-block">\n' +
-            '                <input type="text" name="stress" value="" lay-verify="required" placeholder="请输入压力" class="layui-input" id="stress">\n' +
+            '                <input type="text" name="pressure" value="" lay-verify="required" placeholder="请输入压力" class="layui-input" id="pressure">\n' +
             '            </div>\n' +
             '                <br/>\n' +
             '            <label class="layui-form-label" >流量</label>\n' +
             '            <div class="layui-input-block">\n' +
-            '                <input type="text" name="flow" value="" lay-verify="required" placeholder="请输入流量" class="layui-input" id="flow">\n' +
+            '                <input type="text" name="traffic" value="" lay-verify="required" placeholder="请输入流量" class="layui-input" id="traffic">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
@@ -224,14 +225,14 @@
                             before:function(obj){
                                         // 动态传参
                                 this.data.curPos = $('#tvFP').text();
-                                this.data.name = $('input[name="name"]').val();
-                                this.data.testtype = $('input[name="testtype"]').val();
-                                this.data.person = $('input[name="person"]').val();
+                                this.data.FaultName = $('input[name="FaultName"]').val();
+                                this.data.TestType = $('input[name="TestType"]').val();
                                 this.data.device = $('input[name="device"]').val();
-                                this.data.degree = $('textarea[name="degree"]').val();
+                                this.data.member = $('input[name="member"]').val();
+                                this.data.degree = $('input[name="degree"]').val();
                                 this.data.temperature = $('input[name="temperature"]').val();
-                                this.data.stress = $('input[name="stress"]').val();
-                                this.data.flow = $('input[name="flow"]').val();
+                                this.data.pressure = $('input[name="pressure"]').val();
+                                this.data.traffic = $('input[name="traffic"]').val();
                             },
                             choose: function (obj) {
                                 // let files = obj.pushFile(); //将每次选择的文件追加到文件队列
@@ -276,22 +277,22 @@
                     });
                 //表单验证
                 function verify(){
-                    let _name = document.getElementById("name").value;
-                    let _testtype = document.getElementById("testtype").value;
-                    let _person = document.getElementById("person").value;
+                    let _FaultName = document.getElementById("FaultName").value;
+                    let _TestType = document.getElementById("TestType").value;
+                    let _person = document.getElementById("member").value;
                     let _device = document.getElementById("device").value;
                     let _temperature = document.getElementById("temperature").value;
-                    let _stress = document.getElementById("stress").value;
-                    let _flow = document.getElementById("flow").value;
+                    let _pressure = document.getElementById("pressure").value;
+                    let _traffic = document.getElementById("traffic").value;
                     let _inner = document.getElementById("filename").innerHTML;
                     switch (true){
-                        case _name=="": layer.msg('请输入试验名称', {icon: 2});return false;
-                        case _testtype=="": layer.msg('请输入试验类型', {icon: 2});return false;
+                        case _FaultName=="": layer.msg('请输入试验名称', {icon: 2});return false;
+                        case _TestType=="": layer.msg('请输入试验类型', {icon: 2});return false;
                         case _person=="": layer.msg('请输入试验人员', {icon: 2});return false;
                         case _device=="": layer.msg('请输入试验装置', {icon: 2});return false;
                         case _temperature=="": layer.msg('请输入温度', {icon: 2});return false;
-                        case _stress=="": layer.msg('请输入压力', {icon: 2});return false;
-                        case _flow=="": layer.msg('请输入流量', {icon: 2});return false;
+                        case _pressure=="": layer.msg('请输入压力', {icon: 2});return false;
+                        case _traffic=="": layer.msg('请输入流量', {icon: 2});return false;
                     };
                     return true;
                 };

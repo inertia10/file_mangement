@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="fault.mapper.User_faultMapper">
+<mapper namespace="DM.mapper.User_faultMapper">
 
     <select id="queryData" parameterType="map" resultType="User_fault">
         SELECT * FROM db1.fault
@@ -17,9 +17,9 @@
     </select>
 
     <insert id="addData" parameterType="User_fault">
-        insert into db1.fault(Id, FileName, Name, Type, Member, Device,
+            insert into db1.fault(Id, FileName, FaultName, TestType, Member, Device,
         Degree, Temperature, Pressure, Traffic, Path, Time) values
-        (#{Id},#{FileName},#{Name},#{Type},#{Member},#{Device},#{Degree},#{Temperature},#{Pressure},#{Traffic},#{Path},#{Time})
+        (#{Id},#{FileName},#{FaultName},#{TestType},#{Member},#{Device},#{Degree},#{Temperature},#{Pressure},#{Traffic},#{Path},#{Time});
     </insert>
 
 

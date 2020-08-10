@@ -12,7 +12,7 @@
       "person": 255,
       "temperature": 24,
       "date": 82830700,
-      "stress": "作家",
+      "pressure": "作家",
       "flow": 57
     },
     {
@@ -24,7 +24,7 @@
       "person": 884,
       "temperature": 58,
       "date": 64928690,
-      "stress": "词人",
+      "pressure": "词人",
       "flow": 27
     },
     {
@@ -36,7 +36,7 @@
       "person": 650,
       "temperature": 77,
       "date": 6298078,
-      "stress": "酱油",
+      "pressure": "酱油",
       "flow": 31
     },
     {
@@ -48,7 +48,7 @@
       "person": 362,
       "temperature": 157,
       "date": 37117017,
-      "stress": "诗人",
+      "pressure": "诗人",
       "flow": 68
     },
     {
@@ -60,7 +60,7 @@
       "person": 807,
       "temperature": 51,
       "date": 76263262,
-      "stress": "作家",
+      "pressure": "作家",
       "flow": 6
     },
     {
@@ -72,7 +72,7 @@
       "person": 173,
       "temperature": 68,
       "date": 60344147,
-      "stress": "作家",
+      "pressure": "作家",
       "flow": 87
     },
     {
@@ -84,7 +84,7 @@
       "person": 982,
       "temperature": 37,
       "date": 57768166,
-      "stress": "作家",
+      "pressure": "作家",
       "flow": 34
     },
     {
@@ -96,7 +96,7 @@
       "person": 727,
       "temperature": 150,
       "date": 82030578,
-      "stress": "作家",
+      "pressure": "作家",
       "flow": 28
     },
     {
@@ -108,7 +108,7 @@
       "person": 951,
       "temperature": 133,
       "date": 16503371,
-      "stress": "词人",
+      "pressure": "词人",
       "flow": 14
     },
     {
@@ -120,7 +120,7 @@
       "person": 484,
       "temperature": 25,
       "date": 86801934,
-      "stress": "词人",
+      "pressure": "词人",
       "flow": 75
     },
     {
@@ -132,7 +132,7 @@
       "person": 982,
       "temperature": 37,
       "date": 57768166,
-      "stress": "作家",
+      "pressure": "作家",
       "flow": 34
     },
     {
@@ -144,7 +144,7 @@
       "person": 727,
       "temperature": 150,
       "date": 82030578,
-      "stress": "作家",
+      "pressure": "作家",
       "flow": 28
     },
     {
@@ -156,7 +156,7 @@
       "person": 951,
       "temperature": 133,
       "date": 16503371,
-      "stress": "词人",
+      "pressure": "词人",
       "flow": 14
     },
     {
@@ -168,7 +168,7 @@
       "person": 484,
       "temperature": 25,
       "date": 86801934,
-      "stress": "词人",
+      "pressure": "词人",
       "flow": 75
     }
   ]

@@ -11,11 +11,11 @@ import org.joda.time.DateTime;
 public class User_fault {
 
     //@ExcelProperty(value = "ID",index = 0)
-    private int Id;
+    private int Id = 0;
     //@ExcelProperty(value = "Name",index = 1)
     private String FileName;
-    private String Name;
-    private String Type;
+    private String FaultName;
+    private String TestType;
     private String Member;
     private String Device;
     private String Degree;
@@ -24,6 +24,6 @@ public class User_fault {
     private double Traffic;
     private String Path;
     private String Time;
-    private DateTime InsertTime;
+//    private DateTime InsertTime;
 
 }

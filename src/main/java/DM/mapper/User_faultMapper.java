@@ -1,6 +1,6 @@
 package DM.mapper;
 
-import fault.entity.User_fault;
+import DM.entity.User_fault;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 

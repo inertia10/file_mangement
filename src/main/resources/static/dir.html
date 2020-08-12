@@ -141,14 +141,14 @@
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验名称</label>\n' +
             '            <div class="layui-input-block">\n' +
-            '                <input type="text" name="FaultName" value="" lay-verify="required" placeholder="请输入名称" class="layui-input" id="FaultName">\n' +
+            '                <input type="text" name="faultName" value="" lay-verify="required" placeholder="请输入名称" class="layui-input" id="faultName">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验类型</label>\n' +
             '            <div class="layui-input-block">\n' +
-            '                <input type="text" name="TestType" value="" lay-verify="required" placeholder="请输入试验类型" class="layui-input" id="TestType">\n' +
+            '                <input type="text" name="testType" value="" lay-verify="required" placeholder="请输入试验类型" class="layui-input" id="testType">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
@@ -225,8 +225,8 @@
                             before:function(obj){
                                         // 动态传参
                                 this.data.curPos = $('#tvFP').text();
-                                this.data.FaultName = $('input[name="FaultName"]').val();
-                                this.data.TestType = $('input[name="TestType"]').val();
+                                this.data.faultName = $('input[name="faultName"]').val();
+                                this.data.testType = $('input[name="testType"]').val();
                                 this.data.device = $('input[name="device"]').val();
                                 this.data.member = $('input[name="member"]').val();
                                 this.data.degree = $('input[name="degree"]').val();
@@ -276,32 +276,32 @@
                         return false;
                     });
                 //表单验证
-                function verify(){
-                    let _FaultName = document.getElementById("FaultName").value;
-                    let _TestType = document.getElementById("TestType").value;
-                    let _person = document.getElementById("member").value;
-                    let _device = document.getElementById("device").value;
-                    let _temperature = document.getElementById("temperature").value;
-                    let _pressure = document.getElementById("pressure").value;
-                    let _traffic = document.getElementById("traffic").value;
-                    let _inner = document.getElementById("filename").innerHTML;
-                    switch (true){
-                        case _FaultName=="": layer.msg('请输入试验名称', {icon: 2});return false;
-                        case _TestType=="": layer.msg('请输入试验类型', {icon: 2});return false;
-                        case _person=="": layer.msg('请输入试验人员', {icon: 2});return false;
-                        case _device=="": layer.msg('请输入试验装置', {icon: 2});return false;
-                        case _temperature=="": layer.msg('请输入温度', {icon: 2});return false;
-                        case _pressure=="": layer.msg('请输入压力', {icon: 2});return false;
-                        case _traffic=="": layer.msg('请输入流量', {icon: 2});return false;
-                    };
-                    return true;
-                };
+                // function verify(){
+                //     let _FaultName = document.getElementById("faultName").value;
+                //     let _TestType = document.getElementById("testType").value;
+                //     let _person = document.getElementById("member").value;
+                //     let _device = document.getElementById("device").value;
+                //     let _temperature = document.getElementById("temperature").value;
+                //     let _pressure = document.getElementById("pressure").value;
+                //     let _traffic = document.getElementById("traffic").value;
+                //     let _inner = document.getElementById("filename").innerHTML;
+                //     switch (true){
+                //         case _FaultName=="": layer.msg('请输入试验名称', {icon: 2});return false;
+                //         case _TestType=="": layer.msg('请输入试验类型', {icon: 2});return false;
+                //         case _person=="": layer.msg('请输入试验人员', {icon: 2});return false;
+                //         case _device=="": layer.msg('请输入试验装置', {icon: 2});return false;
+                //         case _temperature=="": layer.msg('请输入温度', {icon: 2});return false;
+                //         case _pressure=="": layer.msg('请输入压力', {icon: 2});return false;
+                //         case _traffic=="": layer.msg('请输入流量', {icon: 2});return false;
+                //     };
+                //     return true;
+                // };
                //必填项验证后才可点击上传文件按钮
                 $("#verifyButton").click(function (){
-                    let result = verify();
-                    if(result){
+                    // let result = verify();
+                    // if(result){
                         document.getElementById("upload").click();
-                    }
+                    // }
 
                 });
                 //重置之后依然可提交

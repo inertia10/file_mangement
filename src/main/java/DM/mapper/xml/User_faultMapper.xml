@@ -7,19 +7,39 @@
     <select id="queryData" parameterType="map" resultType="User_fault">
         SELECT * FROM db1.fault
         <where>
-            <if test="id != null">
-                id like #{id}
+            <if test="fileName != null">
+                fileName like "%"#{fileName}"%"
             </if>
-            <if test="name != null">
-                AND name like "%"#{name}"%"
+            <if test="faultName != null">
+                AND faultName like "%"#{faultName}"%"
+            </if>
+            <if test="testType != null">
+                AND testType like "%"#{testType}"%"
+            </if>
+            <if test="member != null">
+                AND member like "%"#{member}"%"
+            </if>
+            <if test="device != null">
+                AND device like "%"#{device}"%"
+            </if>
+            <if test="degree != null">
+                AND degree like "%"#{degree}"%"
+            </if>
+            <if test="temperature != null">
+                AND temperature = #{temperature}
+            </if>
+            <if test="pressure != null">
+                AND pressure = #{pressure}
+            </if>
+            <if test="traffic != null">
+                AND traffic = #{traffic}
             </if>
         </where>
     </select>
 
     <insert id="addData" parameterType="User_fault">
-            insert into db1.fault(Id, FileName, FaultName, TestType, Member, Device,
-        Degree, Temperature, Pressure, Traffic, Path, Time) values
-        (#{Id},#{FileName},#{FaultName},#{TestType},#{Member},#{Device},#{Degree},#{Temperature},#{Pressure},#{Traffic},#{Path},#{Time});
+            insert into db1.fault(id, fileName, faultName, testType, member, device, degree, temperature, pressure, traffic, path, time) values
+        (#{id},#{fileName},#{faultName},#{testType},#{member},#{device},#{degree},#{temperature},#{pressure},#{traffic},#{path},#{time});
     </insert>
 
 

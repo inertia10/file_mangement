@@ -7,9 +7,14 @@ import DM.entity.User_fault;
 import DM.mapper.User_faultMapper;
 import DM.util.FileTypeUtil;
 import DM.util.CacheUtil;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.tika.Tika;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -174,7 +179,26 @@ public class FileController {
             return getRS(500, e.getMessage());
         }
     }
-
+    /**
+     * 搜索函数
+    */
+    @ResponseBody
+    @PostMapping("/search")
+    public List<User_fault> WriteExcel(@RequestParam String faultName, @RequestParam String testType, @RequestParam String member){
+        //String fileName = "C:\\Users\\Wang.Cao\\Desktop\\FaultTest.xlsx";
+        JSONObject jso = new JSONObject();
+        Map<String, String> map_query = new HashMap<>();
+        if(faultName.isEmpty() && testType.isEmpty() && member.isEmpty())
+            return new ArrayList<>();
+        if(!faultName.isEmpty()) map_query.put("faultName",faultName);
+        if(!testType.isEmpty()) map_query.put("testType",testType);
+        if(!member.isEmpty()) map_query.put("member",member);
+       //EasyExcel.write(fileName, User_fault.class).sheet("test").doWrite(user_faults);
+        List<User_fault> faults = userFaultMapper.queryData(map_query);
+        //jso.put("data",faults);
+//        String res = JSON.toJSONString(faults);
+        return faults;
+    }
     /**
      * nginx转发
      *

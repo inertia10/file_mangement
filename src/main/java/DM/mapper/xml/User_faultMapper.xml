@@ -42,5 +42,10 @@
         (#{id},#{fileName},#{faultName},#{testType},#{member},#{device},#{degree},#{temperature},#{pressure},#{traffic},#{path},#{time});
     </insert>
 
+    <delete id="delData" parameterType="string">
+        delete from db1.fault where path = #{path};
+    </delete>
+
+
 
 </mapper>

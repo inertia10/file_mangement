@@ -2,19 +2,16 @@ package DM.controller;
 
 import DM.annotation.Login;
 import DM.constant.FileTypeEnum;
+import DM.entity.FileData;
 import DM.entity.User;
 import DM.entity.User_fault;
 import DM.mapper.User_faultMapper;
-import DM.util.FileTypeUtil;
 import DM.util.CacheUtil;
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import DM.util.FileTypeUtil;
+import DM.util.ParseFile;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.tika.Tika;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -137,6 +134,7 @@ public class FileController {
         String path;
         int index = 1;
         path = curPos + TestName + SLASH + FileName;
+        String true_path= fileDir+path;
         outFile = new File(fileDir + path);
         while (outFile.exists()) {
             path = curPos + prefix + "(" + index + ")." + suffix;
@@ -145,7 +143,7 @@ public class FileController {
         }
 
         user_fault.setFileName(FileName);
-        user_fault.setPath(fileDir+curPos+FileName);
+        user_fault.setPath(true_path);
         user_fault.setTime(TestSpecificTime);
         userFaultMapper.addData(user_fault);
         
@@ -186,17 +184,14 @@ public class FileController {
     @PostMapping("/search")
     public List<User_fault> WriteExcel(@RequestParam String faultName, @RequestParam String testType, @RequestParam String member){
         //String fileName = "C:\\Users\\Wang.Cao\\Desktop\\FaultTest.xlsx";
-        JSONObject jso = new JSONObject();
         Map<String, String> map_query = new HashMap<>();
         if(faultName.isEmpty() && testType.isEmpty() && member.isEmpty())
             return new ArrayList<>();
         if(!faultName.isEmpty()) map_query.put("faultName",faultName);
         if(!testType.isEmpty()) map_query.put("testType",testType);
         if(!member.isEmpty()) map_query.put("member",member);
-       //EasyExcel.write(fileName, User_fault.class).sheet("test").doWrite(user_faults);
+        //EasyExcel.write(fileName, User_fault.class).sheet("test").doWrite(user_faults);
         List<User_fault> faults = userFaultMapper.queryData(map_query);
-        //jso.put("data",faults);
-//        String res = JSON.toJSONString(faults);
         return faults;
     }
     /**
@@ -580,6 +575,23 @@ public class FileController {
         }
         return file.delete();
     }
+    /**
+     *显示此文件对应的时域频域波形
+     *
+     */
+    @Login
+    @ResponseBody
+    @RequestMapping("/api/show")
+    public FileData show_table(String path) throws IOException {
+        if(path !=null){
+
+            FileData fileData = ParseFile.parse(path);
+            return fileData;
+
+        }else {
+            return new FileData();
+        }
+    }
 
     /**
      * 删除
@@ -590,31 +602,38 @@ public class FileController {
     @Login
     @ResponseBody
     @RequestMapping("/api/del")
-    public Map del(String file) {
+    public Map del(String file,String path) {
         if (fileDir == null) {
             fileDir = SLASH;
         }
         if (!fileDir.endsWith(SLASH)) {
             fileDir += SLASH;
         }
+        if (path !=null) {
+            userFaultMapper.delData(path);
+            return getRS(200, "文件删除成功");
+        }
         if (file != null && !file.isEmpty()) {
             File f = new File(fileDir + file );
-            File smF = new File(fileDir + "sm/" + file );
+            //File smF = new File(fileDir + "sm/" + file );
             if (f.exists()) {
                 // 文件
                 if (f.isFile()) {
                     if (f.delete()) {
-                        if (smF.exists() && smF.isFile()) {
-                            smF.delete();
-                        }
-                        return getRS(200, "文件删除成功" );
+//                        if (smF.exists() && smF.isFile()) {
+//                            smF.delete();
+//                        }
+                        String pathf = fileDir+file;
+                        System.out.println(pathf);
+                        userFaultMapper.delData(pathf);
+                        return getRS(200, "文件删除成功");
                     }
                 } else {
                     // 目录
                     forDelFile(f);
-                    if (smF.exists() && smF.isDirectory()) {
-                        forDelFile(smF);
-                    }
+//                    if (smF.exists() && smF.isDirectory()) {
+//                        forDelFile(smF);
+//                    }
                     return getRS(200, "目录删除成功" );
                 }
             } else {

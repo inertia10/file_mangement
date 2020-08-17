@@ -15,4 +15,6 @@ public interface User_faultMapper {
     List<User_fault> queryData(Map map);
     //添加数据
     void addData(User_fault user_fault);
+    //删除数据
+    void delData(String path);
 }

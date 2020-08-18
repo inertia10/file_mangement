@@ -316,6 +316,7 @@
         var mUrl;
         // 列表点击事件
         $('body').on('click', '.file-list-item', function (e) {
+            console.log(this);
             var isDir = $(this).data('dir');
             var name = $(this).data('name');
             var preview = $(this).data('preview');
@@ -380,6 +381,8 @@
 
         // 删除
         $('#del').click(function () {
+            console.log(mUrl);
+            console.log(mUrl.substring(mUrl.indexOf('/file/') + 6));
             layer.confirm('确定要删除此文件吗？', function () {
                 layer.load(2);
                 $.get(baseServer + 'api/del', {

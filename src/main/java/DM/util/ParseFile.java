@@ -2,16 +2,13 @@ package DM.util;
 
 import DM.entity.Channel_info;
 import DM.entity.FileData;
-import com.sun.media.sound.FFT;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
-
 import java.io.*;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 
@@ -32,9 +29,9 @@ public class ParseFile {
         fileData.setChannelNums(channel_num);
         //while (fis.read(buffer) != -1){
         //System.out.println("读取进度："  + (haveread += readed) * 100 / fileSize + "%   单次读取：" + readed + "个Byte");
-        List<Channel_info> channelLists = new ArrayList<>();
 
         //通道信息
+        List<Channel_info> channelLists = new ArrayList<>();
         for(int i=0;i<channel_num;i++){
             Channel_info channel_info = new Channel_info();
             fis.read(buffer);
@@ -55,11 +52,11 @@ public class ParseFile {
 
             channelLists.add(channel_info);
         }
+        fileData.setChannelInfos(channelLists);
 
         //时域数据信息
         List<List<Double>> dataLists = new ArrayList<>();
         for (Channel_info channel : channelLists) {
-
             List<Double> dataList = new ArrayList<>();
             for(int i=0;i<channel.getDataNums();i++){
                 fis.read(buffer);

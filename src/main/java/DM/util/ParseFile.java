@@ -7,6 +7,8 @@ import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
+import org.junit.Test;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +17,13 @@ import java.util.List;
 public class ParseFile {
 
     public static FileData parse(String source) throws IOException {
-
+//        String source = "D:\\receive\\主泵数据20200907145134.dat";
         FileData fileData = new FileData();
         File sourceFile = new File(source);
         InputStream fis = new FileInputStream(sourceFile);
         long fileSize = sourceFile.length(); // 文件总字节数
         byte[] buffer = new byte[4];// 缓冲区字节数组
+        byte[] buffer2 = new byte[8];// 缓冲区字节数组
 
         int haveread = 0;//已读取的总字节数
         int readed = fis.read(buffer);//读取到字节数组的字节数
@@ -58,11 +61,18 @@ public class ParseFile {
         List<List<Double>> dataLists = new ArrayList<>();
         for (Channel_info channel : channelLists) {
             List<Double> dataList = new ArrayList<>();
-            for(int i=0;i<channel.getDataNums();i++){
-                fis.read(buffer);
-                double dataTemp = ByteToDouble(buffer);
-                dataList.add(dataTemp);
-            }
+            if (channel.getDataLen()==64)
+                for(int i=0;i<channel.getDataNums();i++){
+                    fis.read(buffer2);
+                    double dataTemp = ByteToDouble(buffer2);
+                    dataList.add(dataTemp);
+                }
+            else if (channel.getDataLen()==32)
+                for(int i=0;i<channel.getDataNums();i++){
+                    fis.read(buffer);
+                    double dataTemp = ByteToFloat(buffer);
+                    dataList.add(dataTemp);
+                }
             dataLists.add(dataList);
         }
         fileData.setTimeDomain(dataLists);
@@ -71,8 +81,8 @@ public class ParseFile {
         List<List<Complex>> frequencyLists = new ArrayList<>();
         for (List<Double> dataList : dataLists) {
             List<Complex> frequencyList = new ArrayList<>();
-            Complex[] complexes = fft(dataList);
-            CollectionUtils.addAll(frequencyList,complexes);
+            //Complex[] complexes = fft(dataList);
+            //CollectionUtils.addAll(frequencyList,complexes);
 
             frequencyLists.add(frequencyList);
         }
@@ -82,7 +92,7 @@ public class ParseFile {
     }
 
     //将四位字节数组转为int
-    public static int ByteToInt(byte[] bytes){
+    private static int ByteToInt(byte[] bytes){
         int value=0;
         for(int i = 0; i < 4; i++) {
             int shift= (3-i) * 8;
@@ -91,30 +101,51 @@ public class ParseFile {
         return value;
     }
 
-    //将四位字节数组转为double
-    public static int ByteToDouble(byte[] bytes){
-        int value=0;
-        for(int i = 0; i < 4; i++) {
-            int shift= (3-i) * 8;
-            value +=(bytes[i] & 0xFF) << shift;
+    //将8位字节数组转为double
+    private static double ByteToDouble(byte[] arr){
+        int[] unsigned = new int[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            unsigned[i] = arr[i] & 0xFF;
         }
-        return value;
+        long value = 0;
+        double res = 0;
+        for (int i = 0; i < 8; i++) {
+            value |= ((long) (unsigned[i])) << (8 * i);
+//            value = ((long) (unsigned[i])) << (8 * i);
+//            res += Double.longBitsToDouble(value);
+        }
+        return Double.longBitsToDouble(value);
+
+//        for (int i = 0; i < 8; i++) {
+//            value = ((long) (unsigned[i])) << (8 * i);
+//            res += Double.longBitsToDouble(value);
+//       }
+//      return res;
     }
 
-    public static char ByteToChar(byte[] b) {
-        char c = (char) (((b[0] & 0xFF) << 8) | (b[1] & 0xFF));
-        return c;
+    //将4位字节数组转为float
+    private static float ByteToFloat(byte[] arr) {
+        int[] unsigned = new int[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            unsigned[i] = arr[i] & 0xFF;
+        }
+        int value = 0;
+        for (int i = 0; i < 4; i++) {
+            value |= ((long) (unsigned[i])) << (8 * i);
+        }
+        return Float.intBitsToFloat(value);
     }
 
     //将四位字节数组转为string
-    public static String ByteToStr(byte[] bytes) throws UnsupportedEncodingException {
+    private static String ByteToStr(byte[] bytes) throws UnsupportedEncodingException {
         return new String(bytes,"UTF-8");
     }
 
     //时域变换为频域
-    public static Complex[] fft(List<Double> arr){
+    private static Complex[] fft(List<Double> arr){
 
         int len = arr.size();//时域序列的元素个数
+        System.out.println("--------------------------"+len);
         int M = (int)((Math.log(len)/Math.log(2)==(int)(Math.log(len)/Math.log(2))?Math.log(len)/Math.log(2):(Math.log(len)/Math.log(2))+1));
         if(Math.pow(2,M)!=len){
             for(int i = 0;i<Math.pow(2,M)-len;i++)  arr.add(0.0);

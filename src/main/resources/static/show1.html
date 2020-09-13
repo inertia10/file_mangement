@@ -2,84 +2,127 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>show</title>
     <link rel="stylesheet" href="assets/layui/css/layui.css">
     <link rel="stylesheet" href="assets/common.css">
 </head>
 <body>
 <div class="layui-card">
-    <div class="layui-card-header"><i class="layui-icon layui-icon-add-circle"></i>报表统计</div>
+    <div class="layui-card-header"><i class="layui-icon layui-icon-add-circle"></i>读取数据</div>
+    <div class="margin-left">
+        <span>通道</span>
+        <select name="channel"  lay-verify="" id="selectBox">
+        </select>
+        <span></span>
+        <select name="domain"  lay-verify="" id="selectDomain" onchange="domainChange()">
+            <option>timeDomain</option>
+            <option>frequentDomain</option>
+        </select>
+    </div>
     <div class="layui-card-body">
         <div id="echarts-records" style="width: 100%;min-height:500px"></div>
     </div>
 </div>
 <script type="text/javascript" src="assets/layui/layui.js"></script>
 <script type="text/javascript" src="assets/layui/lay-config.js"></script>
+<script type="text/javascript" src="assets/config.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script type="text/javascript" src="assets/layui/jquery.param.js"></script>
 <script>
     layui.use(['jquery', 'layer', 'element','echarts'], function () {
         var $ = layui.jquery;
         var layer = layui.layer;
         var element = layui.element;
         var echarts = layui.echarts;
+        var $selectBox=$('#selectBox');
+        var result;
+        var path=$.query.get("path")||"";
         /**
          * 报表功能
          */
+        getData();
         var echartsRecords = echarts.init(document.getElementById('echarts-records'), 'walden');
-        var optionRecords = {
-            tooltip: {
-                trigger: 'axis'
-            },
-            legend: {
-                data: ['邮件营销', '联盟广告', '视频广告', '直接访问', '搜索引擎']
-            },
-            grid: {
-                left: '3%',
-                right: '4%',
-                bottom: '3%',
-                containLabel: true
-            },
-            toolbox: {
-                feature: {
-                    saveAsImage: {}
-                }
-            },
-            xAxis: {
-                type: 'category',
-                boundaryGap: false,
-                data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-            },
-            yAxis: {
-                type: 'value'
-            },
-            series: [
-                {
-                    name: '邮件营销',
-                    type: 'line',
-                    data: [120, 132, 101, 134, 90, 230, 210]
-                },
-                {
-                    name: '联盟广告',
-                    type: 'line',
-                    data: [220, 182, 191, 234, 290, 330, 310]
-                },
-                {
-                    name: '视频广告',
-                    type: 'line',
-                    data: [150, 232, 201, 154, 190, 330, 410]
-                },
-                {
-                    name: '直接访问',
-                    type: 'line',
-                    data: [320, 332, 301, 334, 390, 330, 320]
-                },
-                {
-                    name: '搜索引擎',
-                    type: 'line',
-                    data: [820, 932, 901, 934, 1290, 1330, 1320]
-                }
-            ]
-        };
-        echartsRecords.setOption(optionRecords);
+        //通道表格数据渲染
+       $('#selectBox').change(function () {
+           channel();
+       })
+
+        //获取数据
+        function getData(){
+
+            $.get(baseServer + 'api/show', {
+                path: path
+            }, function(res){
+                result=res;
+                console.log(result);
+                layer.closeAll('loading');
+                let str='';
+                if (res.channelNums>0) {
+                    //绑定select数据
+                    for(var i=1;i<=res.channelNums;i++){
+                        str +=`<option>${i}</option>`
+                    };
+                    $selectBox.append(str);
+                    channel();
+                 }
+            })
+        }
+        function channel(){
+                    let dataArr=[];
+                    if($("#selectDomain").val()=='timeDomain'){
+                        let index=$("#selectBox").val();
+                        for(let i=0;i<result.channelInfos[index-1].dataNums;i++){
+                            dataArr.push((result.channelInfos[index-1].dataInterval)*i);
+                        }
+                        var endData=result.channelInfos[index-1].dataNums*result.channelInfos[index-1].dataInterval;
+                        var optionRecords = {
+                            title: {
+                                text: path,
+                                subtext: '模拟数据',
+                                x: 'center'
+                            },
+
+                            legend: {
+                                data: path
+                            },
+                            grid: {
+                                left: '3%',
+                                right: '4%',
+                                bottom: '3%',
+                                containLabel: true
+                            },
+                            toolbox: {
+                                feature: {
+                                    saveAsImage: {}
+                                }
+                            },
+                            xAxis: {
+                                type: 'category',
+                                boundaryGap: false,
+                                data: dataArr
+                            },
+                            yAxis: {
+                                type: 'value'
+                            },
+                            dataZoom:[{
+                                　　type: 'slider',//图表下方的伸缩条
+                                    show : true, //是否显示
+                             　　　　realtime : true, //拖动时，是否实时更新系列的视图
+                             　　　　start : 0, //伸缩条开始位置（1-100），可以随时更改
+                             　　　　end : endData, //伸缩条结束位置（1-100），可以随时更改
+                             　　　}],
+                            series: [
+                                {
+                                    name: '通道',
+                                    type: 'line',
+                                    data:  result.timeDomain[index-1],
+                                },
+                            ]
+                        };
+                    }
+                    echartsRecords.setOption(optionRecords);
+
+        }
         // echarts 窗口缩放自适应
         window.onresize = function(){
             echartsRecords.resize();

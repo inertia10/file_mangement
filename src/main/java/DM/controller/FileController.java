@@ -575,6 +575,7 @@ public class FileController {
         }
         return file.delete();
     }
+
     /**
      *显示此文件对应的时域频域波形
      *
@@ -584,10 +585,8 @@ public class FileController {
     @RequestMapping("/api/show")
     public FileData show_table(String path) throws IOException {
         if(path !=null){
-
             FileData fileData = ParseFile.parse(path);
             return fileData;
-
         }else {
             return new FileData();
         }

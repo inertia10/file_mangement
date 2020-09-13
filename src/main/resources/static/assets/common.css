@@ -7,7 +7,12 @@ html, body {
         width: 1145px;
     }
 }
-
+.margin-right{
+    margin-right: 10px;
+}
+.margin-left{
+    margin-left: 20px;
+}
 a {
     cursor: pointer;
 }

@@ -140,35 +140,35 @@
             '    <form class="layui-form form-container">\n' +
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验名称</label>\n' +
-            '            <div class="layui-input-block">\n' +
+            '            <div class="layui-input-block margin-right">\n' +
             '                <input type="text" name="faultName" value="" lay-verify="required" placeholder="请输入名称" class="layui-input" id="faultName">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验类型</label>\n' +
-            '            <div class="layui-input-block">\n' +
+            '            <div class="layui-input-block margin-right">\n' +
             '                <input type="text" name="testType" value="" lay-verify="required" placeholder="请输入试验类型" class="layui-input" id="testType">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验人员</label>\n' +
-            '            <div class="layui-input-block">\n' +
+            '            <div class="layui-input-block margin-right">\n' +
             '                <input type="text" name="member" value="" lay-verify="required" placeholder="请输入试验人员" class="layui-input" id="member">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验装置</label>\n' +
-            '            <div class="layui-input-block">\n' +
+            '            <div class="layui-input-block margin-right">\n' +
             '                <input type="text" name="device" value="" lay-verify="required" placeholder="请输入试验装置" class="layui-input" id="device">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
             '        <div class="layui-form-item layui-form-text">\n' +
             '            <label class="layui-form-label">试验程度</label>\n' +
-            '            <div class="layui-input-block">\n' +
+            '            <div class="layui-input-block margin-right">\n' +
             '                 <input type="text"  name="degree" value="" lay-verify="required" placeholder="请输入内容" class="layui-input" id="degree">\n' +
             '            </div>\n' +
             '        </div>\n' +
@@ -176,23 +176,23 @@
             '        <div class="layui-form-item layui-form-text">\n' +
             '            <div style="margin-left:40px">试验工况：</div>\n' +
             '            <label class="layui-form-label" >温度</label>\n' +
-            '            <div class="layui-input-block">\n' +
+            '            <div class="layui-input-block margin-right">\n' +
             '                <input type="text" name="temperature" value="" lay-verify="required" placeholder="请输入温度" class="layui-input" id="temperature">\n' +
             '            </div>\n' +
             '                <br/>\n' +
             '            <label class="layui-form-label" >压力</label>\n' +
-            '            <div class="layui-input-block">\n' +
+            '            <div class="layui-input-block margin-right">\n' +
             '                <input type="text" name="pressure" value="" lay-verify="required" placeholder="请输入压力" class="layui-input" id="pressure">\n' +
             '            </div>\n' +
             '                <br/>\n' +
             '            <label class="layui-form-label" >流量</label>\n' +
-            '            <div class="layui-input-block">\n' +
+            '            <div class="layui-input-block margin-right">\n' +
             '                <input type="text" name="traffic" value="" lay-verify="required" placeholder="请输入流量" class="layui-input" id="traffic">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
             '        <div class="layui-form-item layui-form-text">\n' +
-            '            <div class="layui-input-block">\n' +
+            '            <div class="layui-input-block margin-right">\n' +
             '                <br/>\n' +
             '                <div id="filename" style="width:400px;height: 50px;overflow:auto" ></div>\n' +
             '                <button type="button" class="layui-btn " id="verifyButton">\n' +
@@ -204,7 +204,7 @@
             '            </div>\n' +
             '        </div>\n' +
             '        <div class="layui-form-item">\n' +
-            '            <div class="layui-input-block">\n' +
+            '            <div class="layui-input-block margin-right">\n' +
             '                <button class="layui-btn" lay-submit  lay-filter="formFile" id="submitfile1">提交</button>\n' +
             '                <button  class="layui-btn layui-btn-primary" id="submitfile" style="display: none">真实的提交</button>\n' +
             '                <button type="reset" class="layui-btn layui-btn-primary" id="resetfile">重置</button>\n' +
@@ -251,7 +251,6 @@
                                 } else {
                                     layer.msg(res.msg, {icon: 1});
                                     renderList();
-                                    // layer.closeAll();
                                 }
                             },
                             error: function () {
@@ -316,7 +315,6 @@
         var mUrl;
         // 列表点击事件
         $('body').on('click', '.file-list-item', function (e) {
-            console.log(this);
             var isDir = $(this).data('dir');
             var name = $(this).data('name');
             var preview = $(this).data('preview');

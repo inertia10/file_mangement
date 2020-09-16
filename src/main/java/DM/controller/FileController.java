@@ -133,11 +133,11 @@ public class FileController {
         File outFile;
         String path;
         int index = 1;
-        path = curPos + TestName + SLASH + FileName;
+        path = curPos + user_fault.getFaultName() + SLASH +user_fault.getTestType()+SLASH+ FileName;
         String true_path= fileDir+path;
         outFile = new File(fileDir + path);
         while (outFile.exists()) {
-            path = curPos + prefix + "(" + index + ")." + suffix;
+            path = curPos + user_fault.getFaultName() + SLASH +user_fault.getTestType()+SLASH+ FileName+ prefix + "(" + index + ")." + suffix;
             outFile = new File(fileDir + path);
             index++;
         }

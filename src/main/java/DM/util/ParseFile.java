@@ -16,8 +16,10 @@ import java.util.List;
 
 public class ParseFile {
 
+    public static void main(String[] args) throws IOException {
+        parse("D:\\receive\\主泵数据20200907145134.dat");
+    }
     public static FileData parse(String source) throws IOException {
-//        String source = "D:\\receive\\主泵数据20200907145134.dat";
         FileData fileData = new FileData();
         File sourceFile = new File(source);
         InputStream fis = new FileInputStream(sourceFile);
@@ -81,9 +83,8 @@ public class ParseFile {
         List<List<Complex>> frequencyLists = new ArrayList<>();
         for (List<Double> dataList : dataLists) {
             List<Complex> frequencyList = new ArrayList<>();
-            //Complex[] complexes = fft(dataList);
-            //CollectionUtils.addAll(frequencyList,complexes);
-
+            Complex[] complexes = fft(dataList);
+            CollectionUtils.addAll(frequencyList,complexes);
             frequencyLists.add(frequencyList);
         }
         fileData.setFrequencyDomain(frequencyLists);
@@ -111,8 +112,6 @@ public class ParseFile {
         double res = 0;
         for (int i = 0; i < 8; i++) {
             value |= ((long) (unsigned[i])) << (8 * i);
-//            value = ((long) (unsigned[i])) << (8 * i);
-//            res += Double.longBitsToDouble(value);
         }
         return Double.longBitsToDouble(value);
 
@@ -145,6 +144,7 @@ public class ParseFile {
     private static Complex[] fft(List<Double> arr){
 
         int len = arr.size();//时域序列的元素个数
+        if(len==0) return null;
         System.out.println("--------------------------"+len);
         int M = (int)((Math.log(len)/Math.log(2)==(int)(Math.log(len)/Math.log(2))?Math.log(len)/Math.log(2):(Math.log(len)/Math.log(2))+1));
         if(Math.pow(2,M)!=len){

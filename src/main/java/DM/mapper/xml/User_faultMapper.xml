@@ -5,7 +5,7 @@
 <mapper namespace="DM.mapper.User_faultMapper">
 
     <select id="queryData" parameterType="map" resultType="User_fault">
-        SELECT * FROM db1.fault
+        SELECT DISTINCT * FROM db1.fault
         <where>
             <if test="fileName != null">
                 fileName like "%"#{fileName}"%"
@@ -35,6 +35,10 @@
                 AND traffic = #{traffic}
             </if>
         </where>
+        <if test="pageSize != 0">
+            LIMIT #{pageNum},#{pageSize}
+        </if>
+
     </select>
 
     <insert id="addData" parameterType="User_fault">
@@ -45,6 +49,14 @@
     <delete id="delData" parameterType="string">
         delete from db1.fault where path = #{path};
     </delete>
+
+    <select id="query" resultType="User_fault">
+        select * from db1.fault where path = #{path};
+    </select>
+
+    <update id="upData" parameterType="User_fault">
+        update db1.fault set fileName = #{fileName},path = #{path},time = #{time};
+    </update>
 
 
 

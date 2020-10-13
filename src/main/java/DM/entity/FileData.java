@@ -13,7 +13,13 @@ public class FileData {
    private List<Channel_info>  channelInfos;
    //通道时域数据
    private List<List<Double>> timeDomain;
+   //有效值
+   private List<Double> effectValue;
+   //峰值
+   private List<Double> peak;
+   //方差
+   private List<Double> variance;
    //通道数据频域
-   private List<List<Complex>> frequencyDomain;
+   private List<List<Complex_diy>> frequencyDomain;
 
 }

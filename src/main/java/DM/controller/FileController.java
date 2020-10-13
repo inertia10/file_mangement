@@ -2,11 +2,11 @@ package DM.controller;
 
 import DM.annotation.Login;
 import DM.constant.FileTypeEnum;
+import DM.entity.DbData;
 import DM.entity.FileData;
 import DM.entity.User;
 import DM.entity.User_fault;
 import DM.mapper.User_faultMapper;
-import DM.util.CacheUtil;
 import DM.util.FileTypeUtil;
 import DM.util.ParseFile;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,6 @@ import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,12 +22,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
  * @description 文件服务器
- * @author cinco
  * @date 2019-1-21
  */
 @Slf4j
@@ -41,29 +39,16 @@ public class FileController {
 
     private static final String SLASH = "/";
 
-    @Value("${fs.dir}")
     private String fileDir;
-
-//    @Value("${fs.uuidName}")
-//    private Boolean uuidName;
 
     @Value("${fs.useSm}")
     private Boolean useSm;
-
-    @Value("${fs.useNginx}")
-    private Boolean useNginx;
-
-    @Value("${fs.nginxUrl}")
-    private String nginxUrl;
 
     @Value("${admin.uname}")
     private String uname;
 
     @Value("${admin.pwd}")
     private String pwd;
-
-    @Value("${domain}")
-    private String domain;
 
     /**
      * 首页
@@ -173,7 +158,7 @@ public class FileController {
             }
             return rs;
         } catch (Exception e) {
-            //log.info(e.getMessage());
+            log.info(e.getMessage());
             return getRS(500, e.getMessage());
         }
     }
@@ -182,41 +167,30 @@ public class FileController {
     */
     @ResponseBody
     @PostMapping("/search")
-    public List<User_fault> WriteExcel(@RequestParam String faultName, @RequestParam String testType, @RequestParam String member){
+    public DbData WriteExcel(@RequestParam String faultName, @RequestParam String testType, @RequestParam String member, @RequestParam Integer pageNum, @RequestParam Integer pageSize,@RequestParam String degree,@RequestParam String device){
         //String fileName = "C:\\Users\\Wang.Cao\\Desktop\\FaultTest.xlsx";
-        Map<String, String> map_query = new HashMap<>();
-        if(faultName.isEmpty() && testType.isEmpty() && member.isEmpty())
-            return new ArrayList<>();
-        if(!faultName.isEmpty()) map_query.put("faultName",faultName);
-        if(!testType.isEmpty()) map_query.put("testType",testType);
-        if(!member.isEmpty()) map_query.put("member",member);
+        Map<String, Object> map_query = new HashMap<>();
+        int temp = 0;
+        if(faultName.isEmpty() && testType.isEmpty() && member.isEmpty() && degree.isEmpty() && device.isEmpty())
+            return new DbData();
+        if(pageNum !=0)
+            temp = (pageNum-1)*pageSize;
+        map_query.put("faultName",faultName);
+        map_query.put("testType",testType);
+        map_query.put("degree",degree);
+        map_query.put("device",device);
+        map_query.put("pageNum",temp);
+        map_query.put("pageSize",0);
+//        map_query.put("time1",0);
+//        map_query.put("pageSiz",0);
+
         //EasyExcel.write(fileName, User_fault.class).sheet("test").doWrite(user_faults);
         List<User_fault> faults = userFaultMapper.queryData(map_query);
-        return faults;
+        int nums = faults.size();
+        map_query.put("pageSize",pageSize);
+        List<User_fault> faultPage = userFaultMapper.queryData(map_query);
+        return new DbData(faultPage,nums);
     }
-    /**
-     * nginx转发
-     *
-     * @param filePath
-     * @return
-     */
-    private String useNginx(String filePath) {
-        if (nginxUrl == null) {
-            nginxUrl = SLASH;
-        }
-        if (!nginxUrl.endsWith(SLASH)) {
-            nginxUrl += SLASH;
-        }
-        String newName;
-        try {
-            newName = URLEncoder.encode( filePath, "utf-8" );
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            newName = filePath;
-        }
-        return "redirect:" + nginxUrl + newName;
-    }
-
     /**
      * 获取源文件或者缩略图文件
      *
@@ -226,9 +200,7 @@ public class FileController {
      * @return
      */
     private String getFile(String p, boolean download, HttpServletResponse response) {
-        if (useNginx) {
-            return useNginx(p);
-        }
+
         if (fileDir == null) {
             fileDir = SLASH;
         }
@@ -255,69 +227,6 @@ public class FileController {
         return getFile( p, d == 1 ? true : false, response );
     }
 
-    /**
-     * 返回分享源文件或其缩略图页面或文件
-     *
-     * @param sid
-     * @param download 是否下载
-     * @param modelMap
-     * @param response
-     * @return
-     */
-    private String returnShareFileOrSm(String sid, boolean download, ModelMap modelMap, HttpServletResponse response) {
-        String url = null;
-        if (!CacheUtil.dataMap.isEmpty()) {
-            if (CacheUtil.dataMap.containsKey(sid)) {
-                // 是否在有效期内
-                Date expireDate = CacheUtil.dataExpireMap.get(sid);
-                if (expireDate != null && expireDate.compareTo(new Date()) > 0) {
-                    url = (String) CacheUtil.get(sid);
-                    // 文件是否存在
-                    File existFile = new File(fileDir + url );
-                    if (!existFile.exists()) {
-                        modelMap.put( "msg", "该文件已不存在~" );
-                        return "error.html";
-                    }
-                } else {
-                    modelMap.put( "msg", "分享文件已过期" );
-                    return "error.html";
-                }
-            } else {
-                modelMap.put( "msg", "无效的sid" );
-                return "error.html";
-            }
-        }
-        return getFile( url, download, response );
-    }
-
-    /**
-     * 查看/下载分享的源文件
-     *
-     * @param sid 分享sid
-     * @param response
-     * @return
-     */
-    @GetMapping("/share/file")
-    public String shareFile(@RequestParam(value = "sid", required = true) String sid,
-                            @RequestParam(value = "d", required = true) int d,
-                            HttpServletResponse response,
-                            ModelMap modelMap) {
-        return returnShareFileOrSm( sid, d == 1 ? true : false, modelMap, response );
-    }
-
-    /**
-     * 分享源文件的缩略图
-     *
-     * @param sid 分享sid
-     * @param response
-     * @return
-     */
-    @GetMapping("/share/file/sm")
-    public String shareFileSm(@RequestParam(value = "sid", required = true) String sid,
-                              HttpServletResponse response,
-                              ModelMap modelMap) {
-        return returnShareFileOrSm( sid, false, modelMap, response );
-    }
 
     /**
      * 查看缩略图
@@ -534,22 +443,16 @@ public class FileController {
             }
         }
         // 根据上传时间排序
-        Collections.sort(dataList, new Comparator<Map>() {
-            @Override
-            public int compare(Map o1, Map o2) {
-                Long l1 = (long) o1.get("updateTime");
-                Long l2 = (long) o2.get("updateTime");
-                return l1.compareTo(l2);
-            }
+        Collections.sort(dataList, (o1, o2) -> {
+            Long l1 = (long) o1.get("updateTime");
+            Long l2 = (long) o2.get("updateTime");
+            return l1.compareTo(l2);
         });
         // 把文件夹排在前面
-        Collections.sort(dataList, new Comparator<Map>() {
-            @Override
-            public int compare(Map o1, Map o2) {
-                Boolean l1 = (boolean) o1.get("isDir");
-                Boolean l2 = (boolean) o2.get("isDir");
-                return l2.compareTo(l1);
-            }
+        Collections.sort(dataList, (o1, o2) -> {
+            Boolean l1 = (boolean) o1.get("isDir");
+            Boolean l2 = (boolean) o2.get("isDir");
+            return l2.compareTo(l1);
         });
         rs.put( "code", 200 );
         rs.put( "msg", "查询成功" );
@@ -576,6 +479,31 @@ public class FileController {
         return file.delete();
     }
 
+    /**
+     *显示根目录
+     *
+     */
+    @Login
+    @ResponseBody
+    @RequestMapping("/api/root")
+    public boolean showRoot(String rootPath) {
+        if(rootPath !=null){
+            fileDir = rootPath;
+            return true;
+        }else
+            return false;
+    }
+    /*
+    *显示文件属性
+    *
+    */
+    @Login
+    @ResponseBody
+    @RequestMapping("api/attribute")
+    public User_fault showAttribute(String path){
+        User_fault query = userFaultMapper.query(path);
+        return query;
+    }
     /**
      *显示此文件对应的时域频域波形
      *
@@ -609,6 +537,9 @@ public class FileController {
             fileDir += SLASH;
         }
         if (path !=null) {
+            File fi = new File(path);
+            if(fi.exists())
+                fi.delete();
             userFaultMapper.delData(path);
             return getRS(200, "文件删除成功");
         }
@@ -652,7 +583,7 @@ public class FileController {
     @Login
     @ResponseBody
     @RequestMapping("/api/rename")
-    public Map rename(String oldFile, String newFile) {
+    public Map rename(String oldFile, String newFile,User_fault user_fault) {
         if (fileDir == null) {
             fileDir = SLASH;
         }
@@ -664,22 +595,26 @@ public class FileController {
             File smF = new File(fileDir + "sm/" + oldFile );
             File nFile = new File(fileDir + newFile );
             File nsmFile = new File(fileDir + "sm/" + newFile );
+
             if (f.renameTo(nFile)) {
                 if (smF.exists()) {
                     smF.renameTo(nsmFile);
                 }
+                String fileName = newFile.substring(newFile.lastIndexOf('/')+1);
+                String path1 = nFile.getPath();
+                String path = path1.replaceAll("\\\\","/");
+                int numLength = fileName.length();
+
+                String Time = fileName.substring(numLength-18,numLength-4);
+                user_fault.setFileName(fileName);
+                user_fault.setPath(path);
+                user_fault.setTime(Time);
+
+                userFaultMapper.upData(user_fault);
                 return getRS(200, "重命名成功", SLASH + newFile );
             }
         }
         return getRS(500, "重命名失败" );
-    }
-
-    /**
-     * 获取当前日期
-     */
-    private String getDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd/");
-        return sdf.format(new Date());
     }
 
     /**
@@ -741,106 +676,4 @@ public class FileController {
         }
         return getRS(500, "创建失败" );
     }
-
-    /**
-     * 分享文件
-     *
-     * @param file 文件
-     * @param time 有效时间(分钟)
-     * @return Map
-     */
-    @Login
-    @ResponseBody
-    @PostMapping("/api/share")
-    public Map share(String file, int time) {
-        // 若文件已经分享
-        if (!CacheUtil.dataMap.isEmpty()) {
-            if (CacheUtil.dataMap.containsValue(file)) {
-                Set<String> set = CacheUtil.dataExpireMap.keySet();
-                // 找出分享的key
-                String key = null;
-                for (String t : set) {
-                    if (CacheUtil.get(t) != null && CacheUtil.get(t).equals(file)) {
-                        key = t;
-                        break;
-                    }
-                }
-                // 是否在有效期内
-                if (key != null) {
-                    Date expireDate = CacheUtil.dataExpireMap.get(key);
-                    if (expireDate != null && expireDate.compareTo(new Date()) > 0) {
-                        return getRS(200, "该文件已分享", domain + SLASH + "share?sid=" + key );
-                    }
-                }
-            }
-        }
-        if (fileDir == null) {
-            fileDir = SLASH;
-        }
-        if (!fileDir.endsWith(SLASH)) {
-            fileDir += SLASH;
-        }
-        String sid = UUID.randomUUID().toString();
-        CacheUtil.put( sid, file, time );
-        return getRS(200, "分享成功", domain + SLASH + "share?sid=" + sid );
-    }
-
-    /**
-     * 分享文件展示页面
-     *
-     * @param sid 分享文件sid
-     * @param modelMap
-     * @return
-     */
-    @GetMapping("/share")
-    public String sharePage(@RequestParam(value = "sid", required = true) String sid, ModelMap modelMap) {
-        if (!CacheUtil.dataMap.isEmpty()) {
-            if (CacheUtil.dataMap.containsKey(sid)) {
-                // 是否在有效期内
-                Date expireDate = CacheUtil.dataExpireMap.get(sid);
-                if (expireDate != null && expireDate.compareTo(new Date()) > 0) {
-                    String url = (String) CacheUtil.get(sid);
-                    // 文件是否存在
-                    File existFile = new File(fileDir + url );
-                    if (!existFile.exists()) {
-                        modelMap.put( "exists", false );
-                        modelMap.put( "msg", "该文件已不存在~" );
-                        return "share";
-                    }
-                    // 检测文件类型
-                    String contentType = null;
-                    String suffix = existFile.getName().substring( existFile.getName().lastIndexOf(".") + 1 );
-                    try {
-                        contentType = new Tika().detect(existFile);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    // 获取文件图标、文件名、图片文件缩略图片地址、过期时间
-                    modelMap.put( "sid", sid );
-                    modelMap.put( "type", getFileType(suffix, contentType) );
-                    modelMap.put( "exists", true );
-                    modelMap.put( "fileName", url.substring(url.lastIndexOf('/') + 1) );
-                    // 是否有缩略图
-                    String smUrl = "sm/" + url;
-                    if (new File(fileDir + smUrl ).exists()) {
-                        modelMap.put( "hasSm", true );
-                        // 缩略图地址
-                        modelMap.put( "smUrl", "share/file/sm?sid=" + sid );
-                    }
-                    modelMap.put( "expireTime", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(CacheUtil.dataExpireMap.get(sid)) );
-                    // 是否支持浏览器在线查看
-                    boolean flag = false;
-                    if (FileTypeUtil.canOnlinePreview(contentType)) {
-                        flag = true;
-                    }
-                    modelMap.put( "preview", flag );
-                    return "share";
-                }
-            }
-        }
-        modelMap.put( "exists", false );
-        modelMap.put( "msg", "分享不存在或已经失效~" );
-        return "share";
-    }
-
 }

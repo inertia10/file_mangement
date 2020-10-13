@@ -11,9 +11,18 @@
 </head>
 
 <body>
-<div class="layui-container" style="padding-top: 15px;width:100%">
+<div class="">
+<div class="left" style="">
+    <ul id="demo"></ul>
+</div>
+<div class="right" >
+<div class="layui-container" style="padding-top: 15px">
     <div class="layui-card">
-        <div class="layui-card-header">当前位置：<span id="tvFP">/</span></div>
+        <div class="layui-card-header">
+            根路径：<span id="beforepath" style="margin:10px 5px;"></span>
+            当前位置：<span id="tvFP">/</span>
+            <button id="root" class="layui-btn layui-btn-sm layui-btn-normal icon-btn" style="float:right; margin:10px 5px;">配置根路径</button>
+        </div>
         <div class="layui-card-body layui-form">
             <div class="layui-form-item layui-row">
             <div class="btnDiv layui-col-md9">
@@ -38,23 +47,25 @@
 <!--<div style="text-align: center;margin: 60px 0 20px 0">-->
 <!--    <a style="color: #777;" href="https://xinke.org.cn" target="_blank">ECode1024</a> |-->
 <!--</div>-->
-
+</div>
 <!-- 下拉菜单 -->
 <div class="dropdown-menu dropdown-anchor-top-left" id="dropdownFile">
-    <div class="dropdown-anchor"></div>
-    <ul>
-        <li><a id="open"><i class="layui-icon layui-icon-file"></i>&emsp;查看&emsp;</a></li>
-        <li><a id="down"><i class="layui-icon layui-icon-download-circle"></i>&emsp;下载&emsp;</a></li>
-        <li>
-            <a id="del" style="color: red !important;">
-                <i class="layui-icon layui-icon-delete" style="font-size: 19px;"></i>&nbsp;&nbsp;&nbsp;删除&emsp;
-            </a>
-        </li>
-        <li><a id="share"><i class="layui-icon layui-icon-share"></i>&emsp;分享&emsp;</a></li>
-        <li><a id="rename"><i class="layui-icon layui-icon-edit"></i>&emsp;重命名&emsp;</a></li>
-        <li><a id="attribute"><i class="layui-icon layui-icon-about"></i>&emsp;属性&emsp;</a></li>
-    </ul>
+        <div class="dropdown-anchor"></div>
+        <ul>
+            <li><a id="open"><i class="layui-icon layui-icon-file"></i>&emsp;查看&emsp;</a></li>
+            <li><a id="down"><i class="layui-icon layui-icon-download-circle"></i>&emsp;下载&emsp;</a></li>
+            <li>
+                <a id="del" style="color: red !important;">
+                    <i class="layui-icon layui-icon-delete" style="font-size: 19px;"></i>&nbsp;&nbsp;&nbsp;删除&emsp;
+                </a>
+            </li>
+            <!--        <li><a id="rename"><i class="layui-icon layui-icon-edit"></i>&emsp;重命名&emsp;</a></li>-->
+            <li><a id="showPicture"><i class="layui-icon layui-icon-camera"></i>&emsp;显示波形图&emsp;</a></li>
+            <li><a id="attribute"><i class="layui-icon layui-icon-about"></i>&emsp;属性&emsp;</a></li>
+        </ul>
+    </div>
 </div>
+
 
 <input type="hidden" id="shareFileUrl" value="">
 <!-- 渲染模板 -->
@@ -82,8 +93,10 @@
 <script type="text/javascript" src="assets/layui/layui.js"></script>
 <script type="text/javascript" src="assets/clipboard.min.js"></script>
 <script type="text/javascript" src="assets/config.js"></script>
+<script type="text/javascript" src="assets/layui/jquery-3.5.1.min.js"></script>
+<script type="text/javascript" src="assets/layui/jquery.param.js"></script>
 <script>
-    layui.use(['jquery', 'layer', 'element', 'upload', 'laytpl', 'util','form'], function () {
+    layui.use(['jquery', 'layer', 'element', 'upload', 'laytpl', 'util','form','tree'], function () {
         var $ = layui.jquery;
         var layer = layui.layer;
         var element = layui.element;
@@ -91,9 +104,144 @@
         var laytpl = layui.laytpl;
         var util = layui.util;
         var form = layui.form;
+        //树形菜单文件夹
+        var menu=[];
+        function menuRender(dir,data){
+            //menu.length返回上级菜单会出现两个树形菜单
+            if(dir == "/"&& menu.length == 0){
+                for(var i=0;i<data.length;i++){
+                    var menuObj={};
+                    menuObj["name"]=data[i].name;
+                    //isDir说明是个文件夹，依然可以展开
+                    if(data[i].isDir){
+                        menuObj["spread"]=true;
+                        menuObj["children"]=[{"name":"..."}];
+                    }
+                    menu.push(menuObj);
+                }
+            }else{
+                var menudata=menu;
+                var div1=dir;
+                while(div1.indexOf("/")>=0){
+                    div1=div1.substring(div1.indexOf("/")+1);
+                    if(div1.indexOf("/")>=0){
+                        var parent=div1.substring(0,div1.indexOf("/"));
+                    }else{
+                        var parent=div1.substring(div1.indexOf("/")+1);
+                    }
+                    for(var i=0;i<menudata.length;i++){
+                        if(menudata[i]["name"]==parent && menudata[i]["children"]){
+                            menudata=menudata[i]["children"];
+                        }
+                    }
+                }
+                for(var i=0;i<data.length;i++){
+                    var menuObj={};
+                    menuObj["name"]=data[i].name;
+                    if(data[i].isDir){
+                        menuObj["spread"]=true;
+                        menuObj["children"]=[{"name":"..."}];
+                    }
+                    menudata[i]=menuObj;
+                }
+            }
+            treeRender();
+        }
+        function treeRender(){
+            $("#demo li").remove();
+            layui.tree({
+                elem: '#demo' //传入元素选择器
+                ,nodes: menu
+                ,click: function(node){
+                    function findpath(node,menudata){
+                        for(var i=0;i<menudata.length;i++){
+                            // debugger;
+                            if(menudata[i]["name"]==node){
+                                return "/"+node;
+                            }else if(menudata[i]["children"]){
+                                var path2= "/"+menudata[i]["name"]+findpath(node,menudata[i]["children"])
+                                if(path2.indexOf("undefined")==-1){
+                                    return path2;
+                                }
+                                continue;
+                            }else if(menudata[i][name]=="..."){
+                                break;
+                            }
+                        }
+                    }
+                    //判断根节点不包含...并且文件不可以再被点击
+                    if(node.name=="..."|| ! node.children){
+                        return false;
+                    }
+                    var pathdir=findpath(node.name,menu);
+                 //node即为当前点击的节点数据
 
+                        var cDir = $('#tvFP').text();
+                        cDir=pathdir;
+                        $('#tvFP').text(cDir);
+                        renderList(cDir);
+            }
+        });
+        }
+        //选择文件夹
+        $("#root").click(function(){
+            layer.open({
+                formType: 0,
+                title: '请输入配置文件的根目录',
+                area: ['200px', '200px'], //自定义文本域宽高
+                closeBtn:'1',//右上角的关闭
+                content: `<div class="layui-form">
+                          <p style="font-size: 10px;">示例路径：E:/pathname/</p>
+                          <form class="layui-form form-container">
+                          <input name="txt_remark" id="remark" style="margin-right:6px"/>
+                          </form>
+                          <p style="font-size:10px;color:red">*注意不能包含中文字符</p>
+                          </div>
+                          `,
+                btn:['确认','关闭'],
+                yes: function (index) {
+                    var rootPath = $('#remark').val();//获取文本框的值
+                    $.get(baseServer + 'api/root', {
+                        rootPath:rootPath
+                    }, function (res) {
+                        layer.closeAll('loading');
+                        if (res) {
+                            $("#beforepath").text(rootPath);
+                            localStorage.setItem("root",rootPath);
+                            renderList();
+                        } else {
+                            layer.msg(res.msg, {icon: 2});
+                        }
+                    });
+                    layer.close(index);
+
+                },
+            });
+        })
+        //初始化
+        function init(){
+            var path;
+            if(localStorage.getItem("root")){
+                $('#beforepath').text(localStorage.getItem("root"));
+                path=$('#beforepath').text();
+            }
+            $.get(baseServer + 'api/root', {
+                rootPath:path
+            }, function (res) {
+                layer.closeAll('loading');
+                if (res) {
+                    renderList();
+                } else {
+                    layer.msg(res.msg, {icon: 2});
+                }
+            });
+            layer.close('loading');
+        }
         // 渲染文件列表
         function renderList(dir) {
+            if(localStorage.getItem("root")){
+                $('#beforepath').text(localStorage.getItem("root"));
+            }
             if ($('#tvFP').text() == '/') {
                 $('#btnAdd').hide();
                 $('#btnDelDir').hide();
@@ -117,6 +265,7 @@
                         res.data[i].url = baseServer + 'file/' + res.data[i].url;
                         res.data[i].smUrl = baseServer + 'file/sm?p=' + res.data[i].smUrl;
                     }
+                    menuRender(dir,res.data);
                     laytpl(fileTpl.innerHTML).render(res.data, function (html) {
                         $('.file-list').html(html);
                     });
@@ -126,7 +275,7 @@
             });
         }
 
-        renderList();
+        init();
 
         //输入上传信息
         $("#btnAdd").click(function () {
@@ -364,12 +513,49 @@
             $('#copy').attr('data-clipboard-text', '');
             $('#dropdownFile').removeClass('dropdown-opened');
         });
-
-        // 查看
-        $('#open').click(function () {
+        //获取路径名
+        function getRoot(){
             var fullName = mUrl.substr(7);
-            window.open("/file?p=" + fullName + "&d=0", '_blank');
+            var root=$("#beforepath").text();
+            var path=root+fullName;
+            return path;
+        }
+        // 查看
+        $('#showPicture').click(function () {
+            var path=getRoot();
+            var url="show1.html?path="+path;
+            window.open(url);
         });
+        //属性
+        $('#attribute').click(function(){
+            var path=getRoot();
+
+            $.get(baseServer + 'api/attribute', {
+                path:path
+            }, function (res) {
+                layer.closeAll('loading');
+                if (res) {
+                    //显示属性
+                    layer.open({
+                        type: 1,
+                        title:"文件信息",
+                        skin: 'layui-layer-rim', //加上边框
+                        content:'<div class="layui-form-item margin-left">试验名称:'+res.fileName+'</div>' +
+                            '<div class="layui-form-item margin-left">试验类型：'+res.testType+'</div>'+
+                            '<div class="layui-form-item margin-left">试验人员：'+res.member+'</div>'+
+                            '<div class="layui-form-item margin-left">试验日期：'+res.time+'</div>'+
+                            '<div class="layui-form-item margin-left">试验装置：'+res.device+'</div>'+
+                            '<div class="layui-form-item margin-left">试验程度：'+res.degree+'</div>'+
+                            '<div class="layui-form-item margin-left">温度：'+res.temperature+'</div>'+
+                            '<div class="layui-form-item margin-left">压力：'+res.pressure+'</div>'+
+                            '<div class="layui-form-item margin-left">试验路径：'+path+'</div>'
+
+                    });
+                } else {
+                    layer.msg(res.msg, {icon: 2});
+                }
+            });
+        })
 
         // 下载
         $('#down').click(function () {
@@ -417,46 +603,6 @@
                         renderList();
                     } else {
                         layer.msg(res.msg, {icon: 2});
-                    }
-                });
-                layer.close(index);
-            });
-        });
-
-        // 分享
-        $('#share').click(function () {
-            layer.prompt({
-                formType: 0,
-                value: '30',
-                title: '设置时间(分钟)'
-            }, function(value, index, elem){
-                var file = mUrl.substr(7);
-                layer.load(2);
-                $.post(baseServer + 'api/share', {
-                    file: file,
-                    time: value
-                }, function (res) {
-                    layer.closeAll('loading');
-                    if (res.code == 200) {
-                        layer.open({
-                            title: res.msg,
-                            content: '链接：' + res.url,
-                            btn: ['复制链接'],
-                            btn1: function(index, layero){
-                                var clipboard = new ClipboardJS(".layui-layer-btn0",{
-                                    text: function () {
-                                        return res.url;
-                                    }
-                                });
-                                clipboard.on('success', function (e) {
-                                    e.clearSelection();
-                                    layer.msg('分享地址已复制', {icon: 1});
-                                });
-                                clipboard.on('error', function (e) {
-                                    layer.msg('复制失败，请手动复制', {icon: 2});
-                                });
-                            }
-                        });
                     }
                 });
                 layer.close(index);

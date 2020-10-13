@@ -3,8 +3,14 @@ package DM;
 import org.apache.tika.Tika;
 import org.junit.Ignore;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+
+import static javax.swing.JFileChooser.APPROVE_OPTION;
+import static javax.swing.JFileChooser.DIRECTORIES_ONLY;
 
 /**
  * Created by Administrator on 2019-01-07 下午 2:22.
@@ -14,8 +20,6 @@ public class Test {
 
     @org.junit.Test
     public void test() throws IOException {
-        Tika tika = new Tika();
-        String detect = tika.detect(new File("C:\\EasyFS\\2018\\12\\26\\a0e0bffa077b4218a0739433439521e2.jpg"));
-        System.out.println(detect);
+
     }
 }

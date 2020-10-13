@@ -13,6 +13,7 @@ public class demo {
         System.out.println(c+d==e);
         int ab = Integer.MAX_VALUE;
         ab = ab+2;
+        int aaa_ = 5;
 
     }
 }

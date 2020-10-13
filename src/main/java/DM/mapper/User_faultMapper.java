@@ -17,4 +17,8 @@ public interface User_faultMapper {
     void addData(User_fault user_fault);
     //删除数据
     void delData(String path);
+    //查询单条数据
+    User_fault query(String path);
+    //修改名称
+    void upData(User_fault user_fault);
 }

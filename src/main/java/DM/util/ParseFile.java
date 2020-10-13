@@ -1,19 +1,19 @@
 package DM.util;
 
 import DM.entity.Channel_info;
+import DM.entity.Complex_diy;
 import DM.entity.FileData;
-import org.apache.commons.collections4.CollectionUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
-import org.junit.Test;
-
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-
+@Slf4j
 public class ParseFile {
 
     public static void main(String[] args) throws IOException {
@@ -79,12 +79,68 @@ public class ParseFile {
         }
         fileData.setTimeDomain(dataLists);
 
-        //频域变换
-        List<List<Complex>> frequencyLists = new ArrayList<>();
+        //求取有效值
+        List<Double> effectiveList = new ArrayList<>();
+        double effective;
+        int dataSize ;
+        double average = 0;
         for (List<Double> dataList : dataLists) {
-            List<Complex> frequencyList = new ArrayList<>();
+            int sum =0;
+            dataSize = dataList.size();
+            for (Double aDouble : dataList)
+                sum += Math.abs(aDouble);
+            try{
+                average = (sum / dataSize);
+            }catch (
+                  Exception e
+            ){
+                log.error("除数不能为0");
+            }
+            effective = Math.pow(average,0.5);
+            effectiveList.add(effective);
+        }
+        fileData.setEffectValue(effectiveList);
+
+        //求取峰值
+        List<Double> peakList = new ArrayList<>();
+        double peak;
+        for (List<Double> dataList : dataLists) {
+            peak = Collections.max(dataList);
+            peakList.add(peak);
+        }
+        fileData.setPeak(peakList);
+
+        //求取方差
+        List<Double> varianceList = new ArrayList<>();
+        double sum ;
+        for (List<Double> dataList : dataLists) {
+            double sumSquare = 0;
+            sum = dataList.stream().mapToDouble(Double::doubleValue).sum();
+            dataSize = dataList.size();
+            try{
+                average = (sum / dataSize);
+            }catch (
+                    Exception e
+            ){
+                log.error("除数不能为0");
+            }
+            for (Double aDouble : dataList){
+                sumSquare += Math.pow((aDouble-average),2);
+            }
+            varianceList.add(sumSquare / dataSize);
+        }
+        fileData.setVariance(varianceList);
+
+        //频域变换
+        List<List<Complex_diy>> frequencyLists = new ArrayList<>();
+        Complex_diy comp;
+        for (List<Double> dataList : dataLists) {
+            List<Complex_diy> frequencyList = new ArrayList<>();
             Complex[] complexes = fft(dataList);
-            CollectionUtils.addAll(frequencyList,complexes);
+            for (Complex complex : complexes) {
+                comp = new Complex_diy(complex.getReal(),complex.getImaginary());
+                frequencyList.add(comp);
+            }
             frequencyLists.add(frequencyList);
         }
         fileData.setFrequencyDomain(frequencyLists);
@@ -111,15 +167,13 @@ public class ParseFile {
         long value = 0;
         double res = 0;
         for (int i = 0; i < 8; i++) {
-            value |= ((long) (unsigned[i])) << (8 * i);
+            value |= ((long) (unsigned[i])) << (8 * (7-i));
+            res += Double.longBitsToDouble(value);
         }
-        return Double.longBitsToDouble(value);
 
-//        for (int i = 0; i < 8; i++) {
-//            value = ((long) (unsigned[i])) << (8 * i);
-//            res += Double.longBitsToDouble(value);
-//       }
-//      return res;
+
+        return res;
+
     }
 
     //将4位字节数组转为float
@@ -145,7 +199,6 @@ public class ParseFile {
 
         int len = arr.size();//时域序列的元素个数
         if(len==0) return null;
-        System.out.println("--------------------------"+len);
         int M = (int)((Math.log(len)/Math.log(2)==(int)(Math.log(len)/Math.log(2))?Math.log(len)/Math.log(2):(Math.log(len)/Math.log(2))+1));
         if(Math.pow(2,M)!=len){
             for(int i = 0;i<Math.pow(2,M)-len;i++)  arr.add(0.0);

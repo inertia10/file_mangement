@@ -40,12 +40,6 @@
                             </div>
                         </div>
                         <div class="layui-inline">
-                            <label class="layui-form-label">试验日期</label>
-                            <div class="layui-input-inline" style="width:300px;">
-                                <input type="text" name="date" id="date" placeholder="yyyy-MM-dd HH:mm:ss"  autocomplete="off" class="layui-input">
-                            </div>
-                        </div>
-                        <div class="layui-inline">
                             <label class="layui-form-label">试验程度</label>
                             <div class="layui-input-inline">
                                 <input type="text" name="degree"
@@ -57,6 +51,12 @@
                             <div class="layui-input-inline">
                                 <input type="text" name="device"
                                        autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">试验日期</label>
+                            <div class="layui-input-inline" style="width:300px;">
+                                <input type="text" name="date" id="date" placeholder="yyyy-MM-dd HH:mm:ss"  autocomplete="off" class="layui-input">
                             </div>
                         </div>
                         <div class="layui-inline">
@@ -97,11 +97,11 @@
             var faultName=sessionStorage.getItem("faultName");
             var testType=sessionStorage.getItem("testType");
             var member=sessionStorage.getItem("member");
-            var data=sessionStorage.getItem("data");
+            var date=sessionStorage.getItem("date");
             var degree=sessionStorage.getItem("degree");
             var device=sessionStorage.getItem("device");
 
-            if(faultName||testType||member||data||degree||device){
+            if(faultName||testType||member||date||degree||device){
                 tableRender(faultName,testType,member,date,degree,device);
             }
         }
@@ -149,7 +149,7 @@
                     // {field: 'id', width: 80, title: 'ID', sort: true},
                     {field: 'faultName', width: 100, title: '试验名称'},
                     {field: 'testType', width: 100, title: '试验类型'},
-                    {field: 'degree', title: '试验程度', minWidth: 60},
+                    {field: 'degree', width:90,title: '试验程度'},
                     {field: 'time',width:120, title: '试验日期',sort: true},
                     {field: 'device', width: 100, title: '试验装置'},
                     {field: 'member', width: 90, title: '试验人员'},
@@ -157,7 +157,7 @@
                     {field: 'pressure', width: 60, title: '压力'},
                     {field: 'traffic', width:60, title: '流量'},
                     {field: 'fileName', width:140, title: '文件名称'},
-                    {field: 'path', width:140, title: '文件路劲'},
+                    {field: 'path', title: '文件路径',minWidth:140},
                     {title: '操作', width: 120, toolbar: '#currentTableBar', align: "center"}
                 ]],
                 done:function (res) {

@@ -12,14 +12,15 @@
 
 <body>
 <div class="header">
-    <div class="layui-container">
+    <div class="layui-container margin-left" >
         <div class="layui-logo">
-            <img src="assets/images/logo.png"/><cite><span><a href="/">File Management System</a></span></cite>
+<!--            <img src="assets/images/logo1.png"/>-->
+            <cite><span class="font-ui"><a href="/">试验数据管理</a></span></cite>
         </div>
     </div>
 </div>
 
-<div class="layui-container" style="padding-top: 15px;width:80%">
+<div class="layui-container" style="padding-top: 15px;width:95%">
 <!--    导航-->
     <ul class="layui-nav" lay-filter="">
         <li class="layui-nav-item layui-this"><a href="./dir.html">文件管理</a></li>
@@ -28,15 +29,13 @@
     </ul>
 </div>
 <!--    主体-->
-<div class="layui-container" style="padding-top:15px;width:80%;height:800px">
+<div class="layui-container" style="padding-top:15px;width:95%;height:800px">
     <iframe id="iframeMain" src="./dir.html" width="100%" height="100%"  frameborder="no" border="0" ></iframe>
 </div>
 
 <script type="text/javascript" src="assets/layui/layui.js"></script>
 <script type="text/javascript" src="assets/clipboard.min.js"></script>
 <script type="text/javascript" src="assets/config.js"></script>
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script type="text/javascript" src="assets/layui/jquery.param.js"></script>
 <script>
     layui.use(['jquery', 'layer', 'element'], function () {
         var $ = layui.jquery;

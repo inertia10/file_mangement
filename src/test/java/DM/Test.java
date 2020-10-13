@@ -20,6 +20,11 @@ public class Test {
 
     @org.junit.Test
     public void test() throws IOException {
+        String s1 = "20200907141132";
+        StringBuffer s = new StringBuffer();
+        s.append(s1.substring(0,4)+"-"+s1.substring(4,6)+"-"+s1.substring(6,8)+" "+s1.substring(8,10)+":"+s1.substring(10,12)+":"+s1.substring(12,14));
+        String temp =s.toString();
+        System.out.println(temp);
 
     }
 }

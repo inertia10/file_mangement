@@ -22,6 +22,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.net.URLEncoder;
+import java.security.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -97,7 +100,7 @@ public class FileController {
     @Login
     @ResponseBody
     @PostMapping("/file/upload")
-    public Map upload(@RequestParam MultipartFile file, @RequestParam String curPos, User_fault user_fault) {
+    public Map upload(@RequestParam MultipartFile file, @RequestParam String curPos, User_fault user_fault) throws ParseException {
         curPos = curPos.substring(1) + SLASH;
         if (fileDir == null) {
             fileDir = SLASH;
@@ -111,16 +114,29 @@ public class FileController {
         String suffix = FileName.substring(FileName.lastIndexOf(".") + 1);
         String prefix = FileName.substring(0, FileName.lastIndexOf("."));
         String TestName = FileName.substring(0, NameLen-18);
-        String TestSpecificTime = FileName.substring(NameLen-18,NameLen-4);
-        String TestDate = FileName.substring(NameLen-18,NameLen-10);
-        String TestTime = FileName.substring(NameLen-10,NameLen-4);
-        // 保存到磁盘
-        File outFile;
+        String s1 = FileName.substring(NameLen-18,NameLen-4);
+        StringBuffer s = new StringBuffer();
+        s.append(s1.substring(0,4)+"-"+s1.substring(4,6)+"-"+s1.substring(6,8)+" "+s1.substring(8,10)+":"+s1.substring(10,12)+":"+s1.substring(12,14));
+        String temp = s.toString();
+        //Timestamp ts = new Timestamp(System.currentTimeMillis());
+        //ts = Timestamp.valueOf(temp);
+
+        //string转date类型
+        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date1 = null;
+        date1 = sdf1.parse(temp);
+        //date转datetime
+        long longTime = date1.getTime();
+        //Timestamp timestamp = new Timestamp(longTime);
+        //String TestDate = FileName.substring(NameLen-18,NameLen-10);
+         //String TestTime = FileName.substring(NameLen-10,NameLen-4);
+         //保存到磁盘
+
         String path;
         int index = 1;
         path = curPos + user_fault.getFaultName() + SLASH +user_fault.getTestType()+SLASH+ FileName;
         String true_path= fileDir+path;
-        outFile = new File(fileDir + path);
+        File outFile = new File(fileDir + path);
         while (outFile.exists()) {
             path = curPos + user_fault.getFaultName() + SLASH +user_fault.getTestType()+SLASH+ FileName+ prefix + "(" + index + ")." + suffix;
             outFile = new File(fileDir + path);
@@ -129,7 +145,7 @@ public class FileController {
 
         user_fault.setFileName(FileName);
         user_fault.setPath(true_path);
-        user_fault.setTime(TestSpecificTime);
+        //user_fault.setTime(TestSpecificTime);
         userFaultMapper.addData(user_fault);
         
         try {
@@ -167,23 +183,33 @@ public class FileController {
     */
     @ResponseBody
     @PostMapping("/search")
-    public DbData WriteExcel(@RequestParam String faultName, @RequestParam String testType, @RequestParam String member, @RequestParam Integer pageNum, @RequestParam Integer pageSize,@RequestParam String degree,@RequestParam String device){
+    public DbData WriteExcel(@RequestParam String faultName,
+                             @RequestParam String testType,
+                             @RequestParam String member,
+                             @RequestParam Integer pageNum,
+                             @RequestParam Integer pageSize,
+                             @RequestParam String degree,
+                             @RequestParam String device,
+                             @RequestParam String date){
         //String fileName = "C:\\Users\\Wang.Cao\\Desktop\\FaultTest.xlsx";
         Map<String, Object> map_query = new HashMap<>();
         int temp = 0;
-        if(faultName.isEmpty() && testType.isEmpty() && member.isEmpty() && degree.isEmpty() && device.isEmpty())
-            return new DbData();
+        //if(faultName.isEmpty() && testType.isEmpty() && member.isEmpty() && degree.isEmpty() && device.isEmpty())
+            //return new DbData();
         if(pageNum !=0)
             temp = (pageNum-1)*pageSize;
+
+//        String str1 = date.substring(0,19);
+//        String str2 = date.substring(22,41);
+
         map_query.put("faultName",faultName);
         map_query.put("testType",testType);
         map_query.put("degree",degree);
         map_query.put("device",device);
         map_query.put("pageNum",temp);
         map_query.put("pageSize",0);
-//        map_query.put("time1",0);
-//        map_query.put("pageSiz",0);
-
+//        map_query.put("time1",str1);//时间加入Map中
+//        map_query.put("time2",str2);
         //EasyExcel.write(fileName, User_fault.class).sheet("test").doWrite(user_faults);
         List<User_fault> faults = userFaultMapper.queryData(map_query);
         int nums = faults.size();

@@ -133,12 +133,13 @@ public class ParseFile {
 
         //频域变换
         List<List<Complex_diy>> frequencyLists = new ArrayList<>();
-        Complex_diy comp;
+        Complex_diy comp = null;
         for (List<Double> dataList : dataLists) {
             List<Complex_diy> frequencyList = new ArrayList<>();
             Complex[] complexes = fft(dataList);
             for (Complex complex : complexes) {
-                comp = new Complex_diy(complex.getReal(),complex.getImaginary());
+                if(complex.getImaginary()>=0)
+                    comp = new Complex_diy(complex.getReal(),complex.getImaginary());
                 frequencyList.add(comp);
             }
             frequencyLists.add(frequencyList);

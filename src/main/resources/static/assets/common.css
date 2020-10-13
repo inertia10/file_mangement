@@ -7,6 +7,14 @@ html, body {
         width: 1145px;
     }
 }
+.font-ui{
+    font-size:30px;
+    font-weight:normal;
+    font-family:"Microsoft YaHei","STLiti","STXingkai","STHupo","sans-serif";
+}
+.margin{
+    margin: 0 auto;
+}
 .margin-right{
     margin-right: 10px;
 }

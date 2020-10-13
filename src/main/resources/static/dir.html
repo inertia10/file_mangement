@@ -242,13 +242,19 @@
             if(localStorage.getItem("root")){
                 $('#beforepath').text(localStorage.getItem("root"));
             }
-            if ($('#tvFP').text() == '/') {
+            var text= $('#tvFP').text();
+            if (text == '/') {
                 $('#btnAdd').hide();
                 $('#btnDelDir').hide();
                 $('#btnRname').hide();
 
-            } else {
+            } else if(text.length>1 && text.lastIndexOf("/")==0){
+                console.log(text.lastIndexOf("/"));
                 $('#btnAdd').show();
+                $('#btnDelDir').show();
+                $('#btnRname').show();
+            }else{
+                $('#btnAdd').hide();
                 $('#btnDelDir').show();
                 $('#btnRname').show();
             }
@@ -301,6 +307,13 @@
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
+            '        <div class="layui-form-item layui-form-text">\n' +
+            '            <label class="layui-form-label">试验程度</label>\n' +
+            '            <div class="layui-input-block margin-right">\n' +
+            '                 <input type="text"  name="degree" value="" lay-verify="required" placeholder="请输入内容" class="layui-input" id="degree">\n' +
+            '            </div>\n' +
+            '        </div>\n' +
+            '\n' +
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验人员</label>\n' +
             '            <div class="layui-input-block margin-right">\n' +
@@ -312,13 +325,6 @@
             '            <label class="layui-form-label">试验装置</label>\n' +
             '            <div class="layui-input-block margin-right">\n' +
             '                <input type="text" name="device" value="" lay-verify="required" placeholder="请输入试验装置" class="layui-input" id="device">\n' +
-            '            </div>\n' +
-            '        </div>\n' +
-            '\n' +
-            '        <div class="layui-form-item layui-form-text">\n' +
-            '            <label class="layui-form-label">试验程度</label>\n' +
-            '            <div class="layui-input-block margin-right">\n' +
-            '                 <input type="text"  name="degree" value="" lay-verify="required" placeholder="请输入内容" class="layui-input" id="degree">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +

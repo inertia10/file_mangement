@@ -34,6 +34,12 @@
             <if test="traffic != null">
                 AND traffic = #{traffic}
             </if>
+            <if test="dateTime1 != null">
+                AND fileTime <![CDATA[>=]]> #{dateTime1}
+            </if>
+            <if test="dateTime2 != null">
+                AND fileTime <![CDATA[<=]]> #{dateTime2}
+            </if>
         </where>
         <if test="pageSize != 0">
             LIMIT #{pageNum},#{pageSize}
@@ -42,20 +48,31 @@
     </select>
 
     <insert id="addData" parameterType="User_fault">
-            insert into db1.fault(id, fileName, faultName, testType, member, device, degree, temperature, pressure, traffic, path, time) values
-        (#{id},#{fileName},#{faultName},#{testType},#{member},#{device},#{degree},#{temperature},#{pressure},#{traffic},#{path},#{time});
+            insert into db1.fault(id, fileName, faultName, testType, member, device, degree, temperature, pressure, traffic, path, fileTime) values
+        (#{id},#{fileName},#{faultName},#{testType},#{member},#{device},#{degree},#{temperature},#{pressure},#{traffic},#{path},#{fileTime});
     </insert>
 
     <delete id="delData" parameterType="string">
-        delete from db1.fault where path = #{path};
+        delete from db1.fault where path like "%"#{path}"%";
     </delete>
 
     <select id="query" resultType="User_fault">
         select * from db1.fault where path = #{path};
     </select>
 
-    <update id="upData" parameterType="User_fault">
-        update db1.fault set fileName = #{fileName},path = #{path},time = #{time};
+    <select id="queryFileOldPath" resultType="User_fault">
+       select * from db1.fault where path like #{oldpath}"%";
+    </select>
+
+    <update id="upData" parameterType="map">
+        update db1.fault set path = #{newpath}
+        <if test="testName != null">
+            ,faultName = #{testName}
+        </if>
+         <if test="testType != null">
+            ,testType = #{testType}
+        </if>
+         where path = #{oldpath};
     </update>
 
 

@@ -34,9 +34,9 @@
                 </button>
                 <button id="btnNewDir" class="layui-btn layui-btn-sm layui-btn-normal icon-btn"><i class="layui-icon layui-icon-add-circle"></i>新建文件夹
                 </button>
-                <button id="btnDelDir" class="layui-btn layui-btn-sm layui-btn-primary icon-btn"><i class="layui-icon layui-icon-delete"></i>刪除目录
+                <button id="btnDelDir" class="layui-btn layui-btn-sm layui-btn-primary icon-btn"><i class="layui-icon layui-icon-delete"></i>刪除所在文件夹
                 </button>
-                <button id="btnRname" class="layui-btn layui-btn-sm layui-btn-primary icon-btn"><i class="layui-icon layui-icon-edit"></i>重命名目录
+                <button id="btnRname" class="layui-btn layui-btn-sm layui-btn-primary icon-btn"><i class="layui-icon layui-icon-edit"></i>重命名所在文件夹
                 </button>
             </div>
             </div>
@@ -249,7 +249,6 @@
                 $('#btnRname').hide();
 
             } else if(text.length>1 && text.lastIndexOf("/")==0){
-                console.log(text.lastIndexOf("/"));
                 $('#btnAdd').show();
                 $('#btnDelDir').show();
                 $('#btnRname').show();
@@ -549,7 +548,7 @@
                         content:'<div class="layui-form-item margin-left">试验名称:'+res.fileName+'</div>' +
                             '<div class="layui-form-item margin-left">试验类型：'+res.testType+'</div>'+
                             '<div class="layui-form-item margin-left">试验人员：'+res.member+'</div>'+
-                            '<div class="layui-form-item margin-left">试验日期：'+res.time+'</div>'+
+                            '<div class="layui-form-item margin-left">试验日期：'+res.fileTime+'</div>'+
                             '<div class="layui-form-item margin-left">试验装置：'+res.device+'</div>'+
                             '<div class="layui-form-item margin-left">试验程度：'+res.degree+'</div>'+
                             '<div class="layui-form-item margin-left">温度：'+res.temperature+'</div>'+
@@ -563,16 +562,11 @@
             });
         })
 
-        // 下载
-        $('#down').click(function () {
-            var fullName = mUrl.substr(7);
-            window.open("/file?p=" + fullName + "&d=1", '_blank');
-        });
-
         // 删除
         $('#del').click(function () {
             console.log(mUrl);
             console.log(mUrl.substring(mUrl.indexOf('/file/') + 6));
+            debugger;
             layer.confirm('确定要删除此文件吗？', function () {
                 layer.load(2);
                 $.get(baseServer + 'api/del', {
@@ -684,15 +678,18 @@
         // 重命名当前目录
         $('#btnRname').click(function () {
             var tvFP = $('#tvFP').text();
+            var tvFPL=tvFP.substr(tvFP.lastIndexOf("/")+1);
+            var per=tvFP.substring(0,tvFP.lastIndexOf("/")+1);
             layer.prompt({
                 formType: 0,
-                value: tvFP,
+                value: tvFPL,
                 title: '新目录名'
             }, function(value, index, elem){
                 layer.load(2);
+                var newpath=per+value;
                 $.get(baseServer + 'api/rename', {
                     oldFile: tvFP.substr(1),
-                    newFile: value.substr(1)
+                    newFile: newpath.substr(1)
                 }, function (res) {
                     layer.closeAll('loading');
                     if (res.code == 200) {

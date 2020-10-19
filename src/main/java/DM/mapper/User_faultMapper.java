@@ -19,6 +19,8 @@ public interface User_faultMapper {
     void delData(String path);
     //查询单条数据
     User_fault query(String path);
+    //查询修改文件夹下的文件
+    List<User_fault> queryFileOldPath(String oldpath);
     //修改名称
-    void upData(User_fault user_fault);
+    void upData(Map map);
 }

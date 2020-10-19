@@ -4,6 +4,8 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.sql.Timestamp;
@@ -36,7 +38,7 @@ public class User_fault {
     //@ExcelProperty(value = "文件路径")
     private String path;
     //@ExcelProperty(value = "试验时间")
-    private String time;
+    private Timestamp fileTime;
 //    private DateTime InsertTime;
 
 

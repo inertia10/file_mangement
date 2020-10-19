@@ -4,7 +4,6 @@ import DM.annotation.Login;
 import DM.constant.FileTypeEnum;
 import DM.entity.DbData;
 import DM.entity.FileData;
-import DM.entity.User;
 import DM.entity.User_fault;
 import DM.mapper.User_faultMapper;
 import DM.util.FileTypeUtil;
@@ -12,6 +11,8 @@ import DM.util.ParseFile;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.tika.Tika;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -19,14 +20,13 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.net.URLEncoder;
-import java.security.Timestamp;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
+
 
 /**
  * @description 文件服务器
@@ -38,7 +38,7 @@ import java.util.*;
 public class FileController {
 
     @Autowired
-    private User_faultMapper userFaultMapper;
+    private  User_faultMapper userFaultMapper;
 
     private static final String SLASH = "/";
 
@@ -73,22 +73,6 @@ public class FileController {
         return "login.html";
     }
 
-    /**
-     * 登录提交认证
-     *
-     * @param user
-     * @param session
-     * @return
-     */
-    @PostMapping("/auth")
-    public String auth(User user, HttpSession session) {
-        if (user.getUname().equals(uname) && user.getPwd().equals(pwd)) {
-            session.setAttribute( "LOGIN_USER", user );
-            return "redirect:/";
-        }
-        return "redirect:/login";
-    }
-
 
     /**
      * 上传文件
@@ -114,12 +98,12 @@ public class FileController {
         String suffix = FileName.substring(FileName.lastIndexOf(".") + 1);
         String prefix = FileName.substring(0, FileName.lastIndexOf("."));
         String TestName = FileName.substring(0, NameLen-18);
-        String s1 = FileName.substring(NameLen-18,NameLen-4);
+        String strDateTime = FileName.substring(NameLen-18,NameLen-4);
+        //DateTime fileDateTime = DateTime.parse(strDateTime, DateTimeFormat.forPattern("yyyyMMddHHmmss"));
+
         StringBuffer s = new StringBuffer();
-        s.append(s1.substring(0,4)+"-"+s1.substring(4,6)+"-"+s1.substring(6,8)+" "+s1.substring(8,10)+":"+s1.substring(10,12)+":"+s1.substring(12,14));
+        s.append(strDateTime.substring(0,4)+"-"+strDateTime.substring(4,6)+"-"+strDateTime.substring(6,8)+" "+strDateTime.substring(8,10)+":"+strDateTime.substring(10,12)+":"+strDateTime.substring(12,14));
         String temp = s.toString();
-        //Timestamp ts = new Timestamp(System.currentTimeMillis());
-        //ts = Timestamp.valueOf(temp);
 
         //string转date类型
         SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -127,11 +111,9 @@ public class FileController {
         date1 = sdf1.parse(temp);
         //date转datetime
         long longTime = date1.getTime();
-        //Timestamp timestamp = new Timestamp(longTime);
-        //String TestDate = FileName.substring(NameLen-18,NameLen-10);
-         //String TestTime = FileName.substring(NameLen-10,NameLen-4);
-         //保存到磁盘
+        Timestamp timestamp = new Timestamp(longTime);
 
+        //保存到磁盘
         String path;
         int index = 1;
         path = curPos + user_fault.getFaultName() + SLASH +user_fault.getTestType()+SLASH+ FileName;
@@ -145,7 +127,7 @@ public class FileController {
 
         user_fault.setFileName(FileName);
         user_fault.setPath(true_path);
-        //user_fault.setTime(TestSpecificTime);
+        user_fault.setFileTime(timestamp);
         userFaultMapper.addData(user_fault);
         
         try {
@@ -190,33 +172,52 @@ public class FileController {
                              @RequestParam Integer pageSize,
                              @RequestParam String degree,
                              @RequestParam String device,
-                             @RequestParam String date){
-        //String fileName = "C:\\Users\\Wang.Cao\\Desktop\\FaultTest.xlsx";
+                             @RequestParam String date) throws ParseException {
+
         Map<String, Object> map_query = new HashMap<>();
         int temp = 0;
-        //if(faultName.isEmpty() && testType.isEmpty() && member.isEmpty() && degree.isEmpty() && device.isEmpty())
-            //return new DbData();
+        if(faultName.isEmpty() && testType.isEmpty() && member.isEmpty() && degree.isEmpty() && device.isEmpty() &&date.isEmpty())
+            return new DbData();
         if(pageNum !=0)
             temp = (pageNum-1)*pageSize;
 
-//        String str1 = date.substring(0,19);
-//        String str2 = date.substring(22,41);
-
+        if(!date.isEmpty()){
+            String strtime1 = date.substring(0,19);
+            String strtime2 = date.substring(22);
+            //string转date类型
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date date1 = null;
+            date1 = sdf1.parse(strtime1);
+            //date转datetime
+            long longTime1 = date1.getTime();
+            Timestamp timestamp1 = new Timestamp(longTime1);
+            //string转date类型
+            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date date2 = null;
+            date2 = sdf2.parse(strtime2);
+            //date转datetime
+            long longTime2 = date2.getTime();
+            Timestamp timestamp2 = new Timestamp(longTime2);
+            map_query.put("dateTime1",timestamp1);//时间加入Map中
+            map_query.put("dateTime2",timestamp2);
+        }
         map_query.put("faultName",faultName);
         map_query.put("testType",testType);
         map_query.put("degree",degree);
         map_query.put("device",device);
         map_query.put("pageNum",temp);
         map_query.put("pageSize",0);
-//        map_query.put("time1",str1);//时间加入Map中
-//        map_query.put("time2",str2);
+
+        //easyExcel的导出数据到表格
         //EasyExcel.write(fileName, User_fault.class).sheet("test").doWrite(user_faults);
+
         List<User_fault> faults = userFaultMapper.queryData(map_query);
         int nums = faults.size();
         map_query.put("pageSize",pageSize);
         List<User_fault> faultPage = userFaultMapper.queryData(map_query);
         return new DbData(faultPage,nums);
     }
+
     /**
      * 获取源文件或者缩略图文件
      *
@@ -492,7 +493,7 @@ public class FileController {
      * @param file
      * @return
      */
-    static boolean forDelFile(File file) {
+    boolean forDelFile(File file) {
         if (!file.exists()) {
             return false;
         }
@@ -502,6 +503,10 @@ public class FileController {
                 forDelFile(f);
             }
         }
+        String s = file.toString();
+        String replace = s.replace('\\', '/');
+        userFaultMapper.delData(replace);
+
         return file.delete();
     }
 
@@ -555,41 +560,26 @@ public class FileController {
     @Login
     @ResponseBody
     @RequestMapping("/api/del")
-    public Map del(String file,String path) {
+    public Map del(String file) {
         if (fileDir == null) {
             fileDir = SLASH;
         }
         if (!fileDir.endsWith(SLASH)) {
             fileDir += SLASH;
         }
-        if (path !=null) {
-            File fi = new File(path);
-            if(fi.exists())
-                fi.delete();
-            userFaultMapper.delData(path);
-            return getRS(200, "文件删除成功");
-        }
         if (file != null && !file.isEmpty()) {
             File f = new File(fileDir + file );
-            //File smF = new File(fileDir + "sm/" + file );
             if (f.exists()) {
                 // 文件
                 if (f.isFile()) {
                     if (f.delete()) {
-//                        if (smF.exists() && smF.isFile()) {
-//                            smF.delete();
-//                        }
                         String pathf = fileDir+file;
-                        System.out.println(pathf);
                         userFaultMapper.delData(pathf);
                         return getRS(200, "文件删除成功");
                     }
                 } else {
                     // 目录
                     forDelFile(f);
-//                    if (smF.exists() && smF.isDirectory()) {
-//                        forDelFile(smF);
-//                    }
                     return getRS(200, "目录删除成功" );
                 }
             } else {
@@ -600,7 +590,7 @@ public class FileController {
     }
 
     /**
-     * 重命名
+     * 重命名文件夹
      *
      * @param oldFile
      * @param newFile
@@ -609,7 +599,7 @@ public class FileController {
     @Login
     @ResponseBody
     @RequestMapping("/api/rename")
-    public Map rename(String oldFile, String newFile,User_fault user_fault) {
+    public Map rename(String oldFile, String newFile) throws ParseException {
         if (fileDir == null) {
             fileDir = SLASH;
         }
@@ -617,26 +607,37 @@ public class FileController {
             fileDir += SLASH;
         }
         if (!StringUtils.isEmpty(oldFile) && !StringUtils.isEmpty(newFile)) {
-            File f = new File(fileDir + oldFile );
-            File smF = new File(fileDir + "sm/" + oldFile );
-            File nFile = new File(fileDir + newFile );
-            File nsmFile = new File(fileDir + "sm/" + newFile );
+            String oldpath = fileDir + oldFile;
+            String newpath = fileDir + newFile;
 
-            if (f.renameTo(nFile)) {
-                if (smF.exists()) {
-                    smF.renameTo(nsmFile);
+            String newName = newFile.substring(newFile.lastIndexOf('/')+1);
+
+            int count = 0;
+            for (char achar : oldFile.toCharArray()) {
+                if (achar == '/') count++;
+            }
+
+            File oldf = new File(fileDir + oldFile );
+            File newf = new File(fileDir + newFile );
+
+            if (oldf.renameTo(newf)) {
+
+                Map<String, Object> mapUpdate = new HashMap<>();
+                List<User_fault> us = userFaultMapper.queryFileOldPath(oldpath);
+
+                if(count == 1){
+                    //试验名称
+                    mapUpdate.put("testName",newName);
+                }else if(count == 2) {
+                    //试验类型
+                    mapUpdate.put("testType",newName);
                 }
-                String fileName = newFile.substring(newFile.lastIndexOf('/')+1);
-                String path1 = nFile.getPath();
-                String path = path1.replaceAll("\\\\","/");
-                int numLength = fileName.length();
 
-                String Time = fileName.substring(numLength-18,numLength-4);
-                user_fault.setFileName(fileName);
-                user_fault.setPath(path);
-                user_fault.setTime(Time);
-
-                userFaultMapper.upData(user_fault);
+                for (User_fault fault : us) {
+                    mapUpdate.put("oldpath", fault.getPath());
+                    mapUpdate.put("newpath",fault.getPath().replace(oldpath,newpath));
+                    userFaultMapper.upData(mapUpdate);
+                }
                 return getRS(200, "重命名成功", SLASH + newFile );
             }
         }

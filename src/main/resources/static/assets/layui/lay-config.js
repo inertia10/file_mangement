@@ -14,5 +14,4 @@ layui.config({
     base: rootPath ,
 }).extend({
     echarts: 'echarts', // echarts图表扩展
-    echartsTheme: 'echartsTheme', // echarts图表主题扩展
 });

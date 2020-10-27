@@ -116,8 +116,9 @@
                     if(data[i].isDir){
                         menuObj["spread"]=true;
                         menuObj["children"]=[{"name":"..."}];
+                        menu.push(menuObj);
                     }
-                    menu.push(menuObj);
+
                 }
             }else{
                 var menudata=menu;
@@ -141,8 +142,9 @@
                     if(data[i].isDir){
                         menuObj["spread"]=true;
                         menuObj["children"]=[{"name":"..."}];
+                        menudata[i]=menuObj;
                     }
-                    menudata[i]=menuObj;
+
                 }
             }
             treeRender();
@@ -299,6 +301,25 @@
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
+            '        <div class="layui-form-item layui-form-text">\n' +
+            '            <div style="margin-left:40px">试验工况：</div>\n' +
+            '            <label class="layui-form-label" >温度</label>\n' +
+            '            <div class="layui-input-block margin-right">\n' +
+            '                <input type="text" name="temperature" value="" lay-verify="required" placeholder="请输入温度" class="layui-input" id="temperature">\n' +
+            '            </div>\n' +
+            '                <br/>\n' +
+            '            <label class="layui-form-label" >压力</label>\n' +
+            '            <div class="layui-input-block margin-right">\n' +
+            '                <input type="text" name="pressure" value="" lay-verify="required" placeholder="请输入压力" class="layui-input" id="pressure">\n' +
+            '            </div>\n' +
+            '                <br/>\n' +
+            '            <label class="layui-form-label" >流量</label>\n' +
+            '            <div class="layui-input-block margin-right">\n' +
+            '                <input type="text" name="traffic" value="" lay-verify="required" placeholder="请输入流量" class="layui-input" id="traffic">\n' +
+            '            </div>\n' +
+            '        </div>\n' +
+            '\n' +
+
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验类型</label>\n' +
             '            <div class="layui-input-block margin-right">\n' +
@@ -324,24 +345,6 @@
             '            <label class="layui-form-label">试验装置</label>\n' +
             '            <div class="layui-input-block margin-right">\n' +
             '                <input type="text" name="device" value="" lay-verify="required" placeholder="请输入试验装置" class="layui-input" id="device">\n' +
-            '            </div>\n' +
-            '        </div>\n' +
-            '\n' +
-            '        <div class="layui-form-item layui-form-text">\n' +
-            '            <div style="margin-left:40px">试验工况：</div>\n' +
-            '            <label class="layui-form-label" >温度</label>\n' +
-            '            <div class="layui-input-block margin-right">\n' +
-            '                <input type="text" name="temperature" value="" lay-verify="required" placeholder="请输入温度" class="layui-input" id="temperature">\n' +
-            '            </div>\n' +
-            '                <br/>\n' +
-            '            <label class="layui-form-label" >压力</label>\n' +
-            '            <div class="layui-input-block margin-right">\n' +
-            '                <input type="text" name="pressure" value="" lay-verify="required" placeholder="请输入压力" class="layui-input" id="pressure">\n' +
-            '            </div>\n' +
-            '                <br/>\n' +
-            '            <label class="layui-form-label" >流量</label>\n' +
-            '            <div class="layui-input-block margin-right">\n' +
-            '                <input type="text" name="traffic" value="" lay-verify="required" placeholder="请输入流量" class="layui-input" id="traffic">\n' +
             '            </div>\n' +
             '        </div>\n' +
             '\n' +

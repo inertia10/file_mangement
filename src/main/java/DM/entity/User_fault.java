@@ -30,11 +30,11 @@ public class User_fault {
     //@ExcelProperty(value = "试验程度")
     private String degree;
     //@ExcelProperty(value = "温度")
-    private double temperature;
+    private String temperature;
     //@ExcelProperty(value = "压力")
-    private double pressure;
+    private String pressure;
    // @ExcelProperty(value = "流量")
-    private double traffic;
+    private String traffic;
     //@ExcelProperty(value = "文件路径")
     private String path;
     //@ExcelProperty(value = "试验时间")

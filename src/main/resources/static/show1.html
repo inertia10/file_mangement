@@ -179,11 +179,16 @@
              var optionRecords = {
                 title: {
                     text: path,
-                    subtext:'图示',
-                    x: 'center'
+                    x: 'center',
+                    textStyle: { //主标题文本样式{"fontSize": 18,"fontWeight": "bolder","color": "#333"}
+                        fontFamily: 'Arial, Verdana, sans...',
+                        fontSize: 12,
+                        fontStyle: 'normal',
+                        fontWeight: 'normal',
+                    },
                 },
                 legend: {
-                    data: val
+                    data: '通道'
                 },
                 grid: {
                     left: '3%',

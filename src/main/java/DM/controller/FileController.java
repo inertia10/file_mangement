@@ -10,6 +10,7 @@ import DM.util.FileTypeUtil;
 import DM.util.ParseFile;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.tika.Tika;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -99,7 +100,6 @@ public class FileController {
         String prefix = FileName.substring(0, FileName.lastIndexOf("."));
         String TestName = FileName.substring(0, NameLen-18);
         String strDateTime = FileName.substring(NameLen-18,NameLen-4);
-        //DateTime fileDateTime = DateTime.parse(strDateTime, DateTimeFormat.forPattern("yyyyMMddHHmmss"));
 
         StringBuffer s = new StringBuffer();
         s.append(strDateTime.substring(0,4)+"-"+strDateTime.substring(4,6)+"-"+strDateTime.substring(6,8)+" "+strDateTime.substring(8,10)+":"+strDateTime.substring(10,12)+":"+strDateTime.substring(12,14));
@@ -116,11 +116,11 @@ public class FileController {
         //保存到磁盘
         String path;
         int index = 1;
-        path = curPos + user_fault.getFaultName() + SLASH +user_fault.getTestType()+SLASH+ FileName;
+        path = curPos + user_fault.getFaultName() + SLASH +"T"+user_fault.getTemperature()+"P"+user_fault.getPressure()+"F"+user_fault.getTraffic()+SLASH+user_fault.getTestType()+SLASH+ FileName;
         String true_path= fileDir+path;
         File outFile = new File(fileDir + path);
         while (outFile.exists()) {
-            path = curPos + user_fault.getFaultName() + SLASH +user_fault.getTestType()+SLASH+ FileName+ prefix + "(" + index + ")." + suffix;
+            path = curPos+user_fault.getFaultName()+SLASH +"T"+user_fault.getTemperature()+"P"+user_fault.getPressure()+"F"+user_fault.getTraffic()+ SLASH +user_fault.getTestType()+SLASH+ FileName+ prefix + "(" + index + ")." + suffix;
             outFile = new File(fileDir + path);
             index++;
         }

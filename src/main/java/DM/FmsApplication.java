@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * @description 主程入口
- * @author cinco
- * @date 2019-1-21
+ * @author 智能所
+ * @date 2020.11.19
  */
 @SpringBootApplication
 public class FmsApplication {

@@ -53,14 +53,13 @@
         <div class="dropdown-anchor"></div>
         <ul>
             <li><a id="open"><i class="layui-icon layui-icon-file"></i>&emsp;查看&emsp;</a></li>
-            <li><a id="down"><i class="layui-icon layui-icon-download-circle"></i>&emsp;下载&emsp;</a></li>
             <li>
                 <a id="del" style="color: red !important;">
                     <i class="layui-icon layui-icon-delete" style="font-size: 19px;"></i>&nbsp;&nbsp;&nbsp;删除&emsp;
                 </a>
             </li>
             <!--        <li><a id="rename"><i class="layui-icon layui-icon-edit"></i>&emsp;重命名&emsp;</a></li>-->
-            <li><a id="showPicture"><i class="layui-icon layui-icon-camera"></i>&emsp;显示波形图&emsp;</a></li>
+            <li><a id="showPicture"><i class="layui-icon layui-icon-camera"></i>&emsp;波形图&emsp;</a></li>
             <li><a id="attribute"><i class="layui-icon layui-icon-about"></i>&emsp;属性&emsp;</a></li>
         </ul>
     </div>
@@ -203,20 +202,26 @@
                 btn:['确认','关闭'],
                 yes: function (index) {
                     var rootPath = $('#remark').val();//获取文本框的值
-                    $.get(baseServer + 'api/root', {
-                        rootPath:rootPath
-                    }, function (res) {
-                        layer.closeAll('loading');
-                        if (res) {
-                            $("#beforepath").text(rootPath);
-                            localStorage.setItem("root",rootPath);
-                            renderList();
-                        } else {
-                            layer.msg(res.msg, {icon: 2});
-                        }
-                    });
-                    layer.close(index);
-
+                    if(rootPath[rootPath.length-1]!='/'){
+                        layer.alert("请按照示例格式配置路径",{
+                            icon:5,
+                            title:"提示"
+                        });
+                    }else{
+                        $.get(baseServer + 'api/root', {
+                            rootPath:rootPath
+                        }, function (res) {
+                            layer.closeAll('loading');
+                            if (res) {
+                                $("#beforepath").text(rootPath);
+                                localStorage.setItem("root",rootPath);
+                                renderList();
+                            } else {
+                                layer.msg(res.msg, {icon: 2});
+                            }
+                        });
+                        layer.close(index);
+                    }
                 },
             });
         })
@@ -246,12 +251,12 @@
             }
             var text= $('#tvFP').text();
             if (text == '/') {
-                $('#btnAdd').hide();
+                $('#btnAdd').show();
                 $('#btnDelDir').hide();
                 $('#btnRname').hide();
 
             } else if(text.length>1 && text.lastIndexOf("/")==0){
-                $('#btnAdd').show();
+                $('#btnAdd').hide();
                 $('#btnDelDir').show();
                 $('#btnRname').show();
             }else{
@@ -293,7 +298,6 @@
                     area: ['800px', '800px'], //宽高
                     content:'<br/>\n' +
             '<div class="layui-form">\n' +
-            '    <form class="layui-form form-container">\n' +
             '        <div class="layui-form-item">\n' +
             '            <label class="layui-form-label">试验名称</label>\n' +
             '            <div class="layui-input-block margin-right">\n' +
@@ -348,6 +352,11 @@
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
+            '        <div class="layui-progress layui-progress-big margin-right margin-left" lay-showPercent="yes" lay-filter="progressBar">\n' +
+            '            <div class="layui-progress-bar layui-bg-blue" lay-percent="0%">\n' +
+            '            </div>\n' +
+            '        </div>\n' +
+            '\n' +
             '        <div class="layui-form-item layui-form-text">\n' +
             '            <div class="layui-input-block margin-right">\n' +
             '                <br/>\n' +
@@ -367,18 +376,21 @@
             '                <button type="reset" class="layui-btn layui-btn-primary" id="resetfile">重置</button>\n' +
             '            </div>\n' +
             '        </div>\n' +
-            '    </form>\n' +
             '</div>', //调到文件信息页面
                     success: function(){
                         upload.render({
                             elem: '.upload-btn-whole', //绑定元素
                             shade:false,
+                            size:0,
                             accept: 'file', //允许上传的文件类型
                             multiple: true, //允许多文件上传
                             auto: false, //选完文件后不要自动上传
                             bindAction: '#submitfile', //指定一个按钮触发上传
                             // number:3,
                             url: baseServer + 'file/upload', //上传接口
+                            progress:function(e,percent){
+                                element.progress('progressBar',percent+"%");
+                            },
                             before:function(obj){
                                         // 动态传参
                                 this.data.curPos = $('#tvFP').text();
@@ -403,17 +415,18 @@
                             },
                             done: function (res, index, upload) {
                                 layer.closeAll("loading");
-                                if (res.code != 200) {
-                                    layer.msg(res.msg, {icon: 2});
-                                } else {
+                                if (res.code ==200||res.code ==304) {
                                     layer.msg(res.msg, {icon: 1});
+
                                     renderList();
+                                } else {
+                                    layer.msg(res.msg, {icon: 2});
                                 }
                             },
                             error: function () {
                                 layer.closeAll("loading");
                                 layer.msg('上传失败', {icon: 2});
-                            },
+                            }
                         })
                     }
                 });
@@ -548,7 +561,7 @@
                         type: 1,
                         title:"文件信息",
                         skin: 'layui-layer-rim', //加上边框
-                        content:'<div class="layui-form-item margin-left">试验名称:'+res.fileName+'</div>' +
+                        content:'<div class="layui-form-item margin-left">试验名称: '+res.faultName+'</div>' +
                             '<div class="layui-form-item margin-left">试验类型：'+res.testType+'</div>'+
                             '<div class="layui-form-item margin-left">试验人员：'+res.member+'</div>'+
                             '<div class="layui-form-item margin-left">试验日期：'+res.fileTime+'</div>'+
@@ -567,9 +580,6 @@
 
         // 删除
         $('#del').click(function () {
-            console.log(mUrl);
-            console.log(mUrl.substring(mUrl.indexOf('/file/') + 6));
-            debugger;
             layer.confirm('确定要删除此文件吗？', function () {
                 layer.load(2);
                 $.get(baseServer + 'api/del', {

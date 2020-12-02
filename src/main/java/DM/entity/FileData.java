@@ -12,14 +12,16 @@ public class FileData {
    //各个通道的信息
    private List<Channel_info>  channelInfos;
    //通道时域数据
-   private List<List<Double>> timeDomain;
+   private List<List<Float>> timeDomain;
    //有效值
-   private List<Double> effectValue;
+   private List<Float> effectValue;
    //峰值
-   private List<Double> peak;
+   private List<Float> peak;
    //方差
-   private List<Double> variance;
+   private List<Float> variance;
    //通道数据频域
-   private List<List<Complex_diy>> frequencyDomain;
+   private List<List<Float>> frequencyDomain;
+   //是否需要区间输入框显示标志位
+   private boolean tooBigNums = false;
 
 }

@@ -1,19 +1,18 @@
 package DM.controller;
 
-import DM.annotation.Login;
+
 import DM.constant.FileTypeEnum;
+import DM.entity.Channel_info;
 import DM.entity.DbData;
 import DM.entity.FileData;
 import DM.entity.User_fault;
 import DM.mapper.User_faultMapper;
 import DM.util.FileTypeUtil;
 import DM.util.ParseFile;
+import com.mathworks.toolbox.javabuilder.MWException;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
-import org.apache.poi.ss.formula.functions.T;
 import org.apache.tika.Tika;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -28,52 +27,30 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static DM.util.ParseFile.*;
 
 /**
  * @description 文件服务器
- * @date 2019-1-21
+ * @date 2020-11-24
  */
 @Slf4j
-//@CrossOrigin
 @Controller
 public class FileController {
 
     @Autowired
-    private  User_faultMapper userFaultMapper;
+    private User_faultMapper userFaultMapper;
 
     private static final String SLASH = "/";
 
     private String fileDir;
 
-    @Value("${fs.useSm}")
-    private Boolean useSm;
-
-    @Value("${admin.uname}")
-    private String uname;
-
-    @Value("${admin.pwd}")
-    private String pwd;
-
     /**
      * 首页
-     *
-     * @return
      */
-    @Login
     @RequestMapping("/")
     public String index() {
         return "index.html";
     }
-    /**
-     * 登录页
-     *
-     * @return
-     */
-    @RequestMapping("/login")
-    public String loginPage() {
-        return "login.html";
-    }
-
 
     /**
      * 上传文件
@@ -82,11 +59,10 @@ public class FileController {
      * @param curPos 上传文件时所处的目录位置
      * @return Map
      */
-    @Login
     @ResponseBody
     @PostMapping("/file/upload")
-    public Map upload(@RequestParam MultipartFile file, @RequestParam String curPos, User_fault user_fault) throws ParseException {
-        curPos = curPos.substring(1) + SLASH;
+    public Map upload(@RequestParam MultipartFile file, @RequestParam String curPos, User_fault user_fault) throws ParseException, ParseException {
+        curPos = curPos.substring(1);
         if (fileDir == null) {
             fileDir = SLASH;
         }
@@ -136,24 +112,6 @@ public class FileController {
             }
             file.transferTo(outFile);
             Map rs = getRS(200, "上传成功", path );
-            //生成缩略图
-            if (useSm != null && useSm) {
-                // 获取文件类型
-                String contentType = null;
-                try {
-                    contentType = new Tika().detect(outFile);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (contentType != null && contentType.startsWith( "image/" )) {
-                    File smImg = new File(fileDir + "sm/" + path );
-                    if (!smImg.getParentFile().exists()) {
-                        smImg.getParentFile().mkdirs();
-                    }
-                    Thumbnails.of(outFile).scale(1f).outputQuality(0.25f).toFile(smImg);
-                    rs.put( "smUrl", "sm/" + path );
-                }
-            }
             return rs;
         } catch (Exception e) {
             log.info(e.getMessage());
@@ -226,7 +184,7 @@ public class FileController {
      * @param response
      * @return
      */
-    private String getFile(String p, boolean download, HttpServletResponse response) {
+   /* private String getFile(String p, boolean download, HttpServletResponse response) {
 
         if (fileDir == null) {
             fileDir = SLASH;
@@ -236,7 +194,7 @@ public class FileController {
         }
         outputFile(fileDir + p, download, response );
         return null;
-    }
+    }*/
 
     /**
      * 查看/下载源文件
@@ -246,13 +204,12 @@ public class FileController {
      * @param response
      * @return
      */
-    @Login
-    @GetMapping("/file")
+    /*@GetMapping("/file")
     public String file(@RequestParam("p") String p,
                        @RequestParam(value = "d", required = true) int d,
                        HttpServletResponse response) {
         return getFile( p, d == 1 ? true : false, response );
-    }
+    }*/
 
 
     /**
@@ -262,83 +219,10 @@ public class FileController {
      * @param response
      * @return
      */
-    @Login
-    @GetMapping("/file/sm")
+    /*@GetMapping("/file/sm")
     public String fileSm(@RequestParam("p") String p, HttpServletResponse response) {
         return getFile( p,false, response );
-    }
-
-    /**
-     * 输出文件流
-     *
-     * @param file
-     * @param download 是否下载
-     * @param response
-     */
-    private void outputFile(String file, boolean download, HttpServletResponse response) {
-        // 判断文件是否存在
-        File inFile = new File(file);
-        // 文件不存在
-        if (!inFile.exists()) {
-            PrintWriter writer = null;
-            try {
-                response.setContentType("text/html;charset=UTF-8");
-                writer = response.getWriter();
-                writer.write("<!doctype html><title>404 Not Found</title><link rel=\"shorcut icon\" href=\"assets/images/logo.png\"><h1 style=\"text-align: center\">404 Not Found</h1><hr/><p style=\"text-align: center\">FMS Server</p>");
-                writer.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return;
-        }
-        // 获取文件类型
-        String contentType = null;
-        try {
-            contentType = new Tika().detect(inFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // 图片、文本文件,则在线查看
-        //log.info("文件类型：" + contentType);
-        if (FileTypeUtil.canOnlinePreview(contentType) && !download) {
-            response.setContentType(contentType);
-            response.setCharacterEncoding("UTF-8");
-        } else {
-            // 其他文件,强制下载
-            response.setContentType( "application/force-download" );
-            String newName;
-            try {
-                newName = URLEncoder.encode( inFile.getName(), "utf-8" );
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-                newName = inFile.getName();
-            }
-            response.setHeader("Content-Disposition", "attachment;fileName=" + newName );
-        }
-        // 输出文件流
-        OutputStream os = null;
-        FileInputStream is = null;
-        try {
-            is = new FileInputStream(inFile);
-            os = response.getOutputStream();
-            byte[] bytes = new byte[1024];
-            int len;
-            while ((len = is.read(bytes)) != -1) {
-                os.write(bytes, 0, len);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                is.close();
-                os.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+    }*/
 
     /**
      * 获取文件类型
@@ -383,7 +267,7 @@ public class FileController {
      * @param exts
      * @return Map
      */
-    @Login
+   // @Login
     @ResponseBody
     @RequestMapping("/api/list")
     public Map list(String dir, String accept, String exts) {
@@ -432,7 +316,6 @@ public class FileController {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    String type;
                     // 文件地址
                     m.put( "url", (dir.isEmpty() ? dir : (dir + SLASH)) + f.getName() );
                     // 获取文件类型
@@ -514,7 +397,7 @@ public class FileController {
      *显示根目录
      *
      */
-    @Login
+   // @Login
     @ResponseBody
     @RequestMapping("/api/root")
     public boolean showRoot(String rootPath) {
@@ -524,40 +407,33 @@ public class FileController {
         }else
             return false;
     }
+
     /*
     *显示文件属性
-    *
     */
-    @Login
     @ResponseBody
     @RequestMapping("api/attribute")
     public User_fault showAttribute(String path){
         User_fault query = userFaultMapper.query(path);
         return query;
     }
-    /**
+
+    /*
      *显示此文件对应的时域频域波形
-     *
      */
-    @Login
     @ResponseBody
-    @RequestMapping("/api/show")
-    public FileData show_table(String path) throws IOException {
+    @RequestMapping("/api/showfft")
+    public FileData show_table(String path) throws IOException, MWException {
         if(path !=null){
             FileData fileData = ParseFile.parse(path);
             return fileData;
-        }else {
+        }else
             return new FileData();
-        }
     }
 
-    /**
+    /*
      * 删除
-     *
-     * @param file
-     * @return Map
      */
-    @Login
     @ResponseBody
     @RequestMapping("/api/del")
     public Map del(String file) {
@@ -596,10 +472,9 @@ public class FileController {
      * @param newFile
      * @return Map
      */
-    @Login
     @ResponseBody
     @RequestMapping("/api/rename")
-    public Map rename(String oldFile, String newFile) throws ParseException {
+    public Map rename(String oldFile, String newFile) {
         if (fileDir == null) {
             fileDir = SLASH;
         }
@@ -680,7 +555,6 @@ public class FileController {
      * @param dirName
      * @return Map
      */
-    @Login
     @ResponseBody
     @RequestMapping("/api/mkdir")
     public Map mkdir(String curPos, String dirName) {
@@ -702,5 +576,41 @@ public class FileController {
             }
         }
         return getRS(500, "创建失败" );
+    }
+
+    /*
+    * 返回区间内的数据
+    */
+    @ResponseBody
+    @RequestMapping("/api/sectionData")
+    public List<List<Float>> sectionData(String path, int left,int right,boolean flag_domain) throws IOException, MWException {
+        File sourceFile = new File(path);
+        if(!sourceFile.exists()) return new ArrayList<>();
+        BufferedInputStream fis = new BufferedInputStream(new FileInputStream(sourceFile));
+        int strLen = 0;
+        //计算文件名字母个数，设置字节缓冲数组大小用来读取试验名称
+        for (int i = 0, len = sourceFile.getName().length(); i < len; i++)
+            if (Character.isDigit(sourceFile.getName().charAt(i))) {
+                strLen = i;
+                break;
+            }
+        byte[] buffer_str = new byte[strLen];// 缓冲区字节数组
+        fis.read(buffer_4);//读取到字节数组的字节数
+        int channel_num = ByteToInt(buffer_4);
+        //通道信息
+        List<Channel_info> channelLists = channelInfo(fis, channel_num, buffer_str);
+        //时域数据信息
+        List<List<Float>> domainLists = dataDomain(fis, channelLists);
+        List<List<Float>> domainListRES = new ArrayList<>();
+
+        for (int i = 0,len = domainLists.size(); i < len; i++)
+            domainListRES.add(domainLists.get(i).subList(left,right));
+        //判断时域频域标志位来决定返回的数据
+        if(flag_domain)
+            return domainListRES;
+        else {
+            List<List<Float>> frequencyRES = fft_pure(domainListRES, false);
+            return frequencyRES;
+        }
     }
 }

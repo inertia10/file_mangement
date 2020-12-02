@@ -9,7 +9,7 @@
 <body>
 <div class="layui-container" style="margin-top:30px">
     <div class="layui-row">
-        <div class="layui-col-md6">
+        <div class="layui-col-md12">
             <div class="layui-card">
                 <div class="layui-card-header"><i class="layui-icon layui-icon-add-circle"></i>读取数据</div>
                 <div class="margin-left" style="margin-top:10px">
@@ -28,14 +28,21 @@
                         <option>方差</option>
                     </select>
                     <span id="interval"></span>
+                    <div style="padding-right: 50px; float: right;">
+                        <span id="range">输入显示范围：</span>
+                        <input name="range-min"  lay-verify="" id="range-min" style="width: 80px" type="number"/>
+                        <span>-</span>
+                        <input name="range-max"  lay-verify="" id="range-max" style="width: 80px" type="number"/>
+                        <button id="range-modify" style="background: white; border: 1px solid black; padding: 0px 5px;">确定</button>
+                    </div>
                 </div>
 
                 <div class="layui-card-body">
-                    <div id="echarts-records" style="width: 100%;min-height:500px"></div>
+                    <div id="echarts-records" style="width: 100%;min-height:300px"></div>
                 </div>
             </div>
         </div>
-        <div class="layui-col-md6">
+        <div class="layui-col-md12">
             <div class="layui-card layui-row">
                 <div class="layui-card-header"><i class="layui-icon layui-icon-add-circle"></i>读取数据</div>
                 <div class="margin-left" style="margin-top:10px">
@@ -54,10 +61,17 @@
                         <option>方差</option>
                     </select>
                     <span id="interval2"></span>
+                    <div style="padding-right: 50px; float: right;">
+                        <span id="range2">输入显示范围：</span>
+                        <input name="range-min2"  lay-verify="" id="range-min2" style="width: 80px" type="number"/>
+                        <span>-</span>
+                        <input name="range-max2"  lay-verify="" id="range-max2" style="width: 80px" type="number"/>
+                        <button id="range-modify2" style="background: white; border: 1px solid black; padding: 0px 5px;">确定</button>
+                    </div>
                 </div>
 
                 <div class="layui-card-body">
-                    <div id="echarts-records2" style="width: 100%;min-height:500px"></div>
+                    <div id="echarts-records2" style="width: 100%;min-height:300px"></div>
                 </div>
             </div>
         </div>
@@ -72,7 +86,7 @@
     layui.use(['jquery', 'layer', 'element','echarts'], function () {
         var $ = layui.jquery;
         var layer = layui.layer;
-        var element = layui.element;
+        // var element = layui.element;
         var echarts = layui.echarts;
         var $selectBox=$('#selectBox');
         var $selectBox2=$('#selectBox2');
@@ -82,23 +96,32 @@
         /**
          * 报表功能
          */
-        getData();
-        var echartsRecords = echarts.init(document.getElementById('echarts-records'), 'walden');
-        var echartsRecords2 = echarts.init(document.getElementById('echarts-records2'), 'walden');
+
+        var beginTime = new Date();
+        getFftData();
+        var endTime;
+
+        var echartsRecords,echartsRecords2;
+        //判断实例是否存在，若存在先清除
+        if(echartsRecords){
+            echarts.dispose(echartsRecords);
+        }
+        echartsRecords = echarts.init(document.getElementById('echarts-records'), 'walden');
+        if(echartsRecords2){
+            echarts.dispose(echartsRecords2);
+        }
+        echartsRecords2 = echarts.init(document.getElementById('echarts-records2'), 'walden');
+
         //通道表格数据渲染
-       $('#selectBox').change(function () {
-           channel1();
-       })
-        $('#selectBox2').change(function () {
-            channel2();
-        })
+        $('#selectBox').change(channel1)
+        $('#selectBox2').change(channel2)
         //频域时域数据切换
-        $('#selectDomain').change(function () {
-            channel1();
-        })
-        $('#selectDomain2').change(function () {
-            channel2();
-        })
+        $('#selectDomain').change(channel1)
+        $('#selectDomain2').change(channel2)
+        //坐标范围切换
+        $('#range-modify').click(channel1)
+        $('#range-modify2').click(channel2)
+
         //特征值数据切换
         $('#value').change(function(){
             let value=$('#value').val();
@@ -120,63 +143,119 @@
                 case "方差":id.html(result.variance[index-1]);break;
             }
         }
-        //获取数据
-        function getData(){
-            $.get(baseServer + 'api/show', {
-                path: path
-            }, function(res){
-                result=res;
-                layer.closeAll('loading');
-                let str='';
-                if (res.channelNums>0) {
-                    //绑定select数据
-                    for(var i=1;i<=res.channelNums;i++){
-                        str +=`<option>${i}</option>`
-                    };
-                    $selectBox.append(str);
-                    $selectBox2.append(str);
-                    channel1();
-                    channel2();
-                 }
-            })
+        //获取fft数据
+        function getFftData(){
+            let index=layer.load(1);
+
+            $.get(
+                baseServer + 'api/showfft',
+                { path: path },
+                function(res){
+                    result=res;
+                    endTime = new Date();
+                    console.log("从后端获取数据用时共计"+(endTime-beginTime)+"ms");
+
+                    layer.close(index);
+                    layer.closeAll('loading');
+                    let str='';
+
+                    // 提示用户输入范围
+                    if($("#selectDomain").val()=='timeDomain'){
+                        $('#range').html('输入显示范围（0-'+result.timeDomain[index-1].length+'）：');
+                    } else {
+                        $('#range').html('输入显示范围（0-'+result.frequencyDomain[index-1].length+'）：');
+                    }
+                    if($("#selectDomain2").val()=='timeDomain'){
+                        $('#range2').html('输入显示范围（0-'+result.timeDomain[index-1].length+'）：');
+                    } else {
+                        $('#range2').html('输入显示范围（0-'+result.frequencyDomain[index-1].length+'）：');
+                    }
+
+                    if (result.channelNums>0) {
+                        //绑定select数据
+                        for(let i=1;i<=result.channelNums;i++){
+                            str +=`<option>${i}</option>`
+                        };
+                        $selectBox.append(str);
+                        $selectBox2.append(str);
+
+                        beginTime = new Date();
+                        channel1("FFT");
+                        endTime = new Date();
+                        console.log("渲染数据用时共计"+(endTime-beginTime)+"ms");
+                        channel2("FFT");
+                    }
+                }
+            )
+        }
+        function calcRange(val,index, startNum, endNum, nums) {
+            // 输入坐标范围处理
+            var max;
+            var pointInterval;
+
+            max = val=='timeDomain' ? result.timeDomain[index-1].length : result.frequencyDomain[index-1].length;
+            startNum = (!startNum || startNum < 0) ? 0 : startNum;
+            endNum = (!endNum || endNum > max) ? max : endNum;
+            pointInterval = (endNum - startNum > nums) ? Math.floor((endNum - startNum) / nums) : 1;
+
+            return {
+                startNum: startNum,
+                endNum: endNum,
+                pointInterval: pointInterval
+            }
         }
         function channel1(){
             let val=$("#selectDomain").val();
             let index=$("#selectBox").val();
-            let optionRecords1=channel(val,index);
+
+            let showPointNums = 50000;
+            let setRange = calcRange(val,index, $('#range-min').val(), $('#range-max').val(), showPointNums);
+
+            debugger;
+
+            let optionRecords1=channel(val,index,setRange.startNum, setRange.endNum, setRange.pointInterval);
             echartsRecords.setOption(optionRecords1);
         }
         function channel2(){
-           let val=$("#selectDomain2").val();
-           let index=$("#selectBox2").val();
-           let optionRecords2=channel(val,index)
-           echartsRecords2.setOption(optionRecords2);
+            let val=$("#selectDomain2").val();
+            let index=$("#selectBox2").val();
 
+            let showPointNums = 50000;
+            let setRange = calcRange(val,index, $('#range-min2').val(), $('#range-max2').val(), showPointNums);
+
+            debugger;
+
+            let optionRecords2=channel(val,index,setRange.startNum, setRange.endNum, setRange.pointInterval);
+            echartsRecords2.setOption(optionRecords2);
         }
-        function channel(val,index){
+        function channel(val,index,startNum, endNum, pointInterval){
             let xarr=[],yarr=[],length;
+            let nums=result.channelInfos[index-1].dataNums;
             if(val=='timeDomain'){
                 //时域
+                let inter=result.channelInfos[index-1].dataInterval;
+                $("#interval").html(inter);
+                $("#interval2").html(inter);
+
                 //计算横轴
-                for(let i=0;i<result.channelInfos[index-1].dataNums;i++){
-                    xarr.push(i);
-                }
-                $("#interval").html(result.channelInfos[index-1].dataInterval);
-                $("#interval2").html(result.channelInfos[index-1].dataInterval);
-                //length为横轴最大值
-                length=result.channelInfos[index-1].dataNums*result.channelInfos[index-1].dataInterval;
-                yarr=result.timeDomain[index-1];
-            }else if(val=='frequentDomain'){
-                //频域
-                let freArr=result.frequencyDomain[index-1];
-                let length=freArr.length;
-                for(let i=0;i<length;i++){
-                    xarr.push(Number(freArr[i]["re"]));
-                    yarr.push(Number(freArr[i]["im"]));
+                for(let i=0;i<nums;i++){
+                    // xarr[i] = ((i + 1)/inter).toFixed(2);
+                    xarr[i] = i;
                 }
 
+                //length为横轴最大值
+                length = nums/inter;
+                yarr =Array.from(result.timeDomain[index-1]);
+            }else {
+                //频域
+                //判断是fft还是dft，fft是2的幂次方，dft是采样频率除以采样点数再除以2
+                for(let i=0;i<=nums;i++){
+                    xarr[i] = i;
+                }
+                yarr =Array.from(result.frequencyDomain[index-1]);
             }
-             var optionRecords = {
+            var optionRecords = {
+                animation: false,
                 title: {
                     text: path,
                     x: 'center',
@@ -187,14 +266,15 @@
                         fontWeight: 'normal',
                     },
                 },
-                legend: {
-                    data: '通道'
-                },
                 grid: {
                     left: '3%',
                     right: '4%',
                     bottom: '3%',
                     containLabel: true
+                },
+                tooltip:{
+                    trigger:'item',
+                    triggerOn:'click'
                 },
                 toolbox: {
                     feature: {
@@ -203,14 +283,19 @@
                 },
                 xAxis: {
                     type: 'category',
-                    boundaryGap: false,
-                    data: xarr,
+                    // axisLabel:{
+                    //     interval:9999
+                    // },
+                    // boundaryGap: false,
+                    data: xarr.slice(startNum, endNum).filter(function (item, index) {
+                        return index % pointInterval === 0
+                    }),
                 },
                 yAxis: {
                     type: 'value'
                 },
                 dataZoom:[{
-                    type: 'slider',//图表下方的伸缩条
+                    type: 'inside',//图表下方的伸缩条
                     show : true, //是否显示
                     realtime : true, //拖动时，是否实时更新系列的视图
                     start : 0, //伸缩条开始位置（1-100），可以随时更改
@@ -218,9 +303,16 @@
                 }],
                 series: [
                     {
-                        name: '通道',
+                        name: 'N',
                         type: 'line',
-                        data:  yarr,
+                        data:  yarr.slice(startNum, endNum).filter(function (item, index) {
+                            return index % pointInterval === 0
+                        }),
+                        itemStyle:{
+                            normal:{
+                                color:'#a8bcd4',
+                                label:{show:true}}//显示折点数据
+                        },
                     },
                 ]
             };

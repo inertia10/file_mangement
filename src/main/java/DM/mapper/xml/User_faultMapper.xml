@@ -72,6 +72,15 @@
          <if test="testType != null">
             ,testType = #{testType}
         </if>
+        <if test="Temperature != null">
+            ,temperature = #{Temperature}
+        </if>
+        <if test="Pressure != null">
+            ,pressure = #{Pressure}
+        </if>
+        <if test="Traffic != null">
+            ,traffic = #{Traffic}
+        </if>
          where path = #{oldpath};
     </update>
 

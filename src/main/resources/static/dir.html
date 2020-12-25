@@ -8,6 +8,21 @@
     <link rel="stylesheet" href="assets/layui/css/layui.css">
     <link rel="stylesheet" href="assets/common.css">
     <link rel="shorcut icon" href="assets/images/logo.png">
+    <style>
+        #submitfile2 {
+            position: absolute;
+            left: -10px;
+            display: none;
+        }
+        #filename {
+            border: 1px solid rgb(200,200,200);
+            width:400px;height: 90px;overflow:auto;padding: 10px;
+            margin-top: 16px;
+            position: absolute;
+            right: 20px;
+            top: 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -32,8 +47,8 @@
                 </button>
                 <button id="btnAdd" type="button" class="layui-btn layui-btn-sm layui-btn-normal icon-btn"><i class="layui-icon">&#xe681;</i>填写文件信息
                 </button>
-                <button id="btnNewDir" class="layui-btn layui-btn-sm layui-btn-normal icon-btn"><i class="layui-icon layui-icon-add-circle"></i>新建文件夹
-                </button>
+<!--                <button id="btnNewDir" class="layui-btn layui-btn-sm layui-btn-normal icon-btn"><i class="layui-icon layui-icon-add-circle"></i>新建文件夹-->
+<!--                </button>-->
                 <button id="btnDelDir" class="layui-btn layui-btn-sm layui-btn-primary icon-btn"><i class="layui-icon layui-icon-delete"></i>刪除所在文件夹
                 </button>
                 <button id="btnRname" class="layui-btn layui-btn-sm layui-btn-primary icon-btn"><i class="layui-icon layui-icon-edit"></i>重命名所在文件夹
@@ -222,9 +237,9 @@
                         });
                         layer.close(index);
                     }
-                },
+                }
             });
-        })
+        });
         //初始化
         function init(){
             var path;
@@ -295,7 +310,7 @@
                     type: 1,
                     title:"文件信息",
                     skin: 'layui-layer-rim', //加上边框
-                    area: ['800px', '800px'], //宽高
+                    area: ['800px', '674px'], //宽高
                     content:'<br/>\n' +
             '<div class="layui-form">\n' +
             '        <div class="layui-form-item">\n' +
@@ -352,28 +367,24 @@
             '            </div>\n' +
             '        </div>\n' +
             '\n' +
-            '        <div class="layui-progress layui-progress-big margin-right margin-left" lay-showPercent="yes" lay-filter="progressBar">\n' +
-            '            <div class="layui-progress-bar layui-bg-blue" lay-percent="0%">\n' +
-            '            </div>\n' +
-            '        </div>\n' +
-            '\n' +
             '        <div class="layui-form-item layui-form-text">\n' +
             '            <div class="layui-input-block margin-right">\n' +
             '                <br/>\n' +
-            '                <div id="filename" style="width:400px;height: 50px;overflow:auto" ></div>\n' +
-            '                <button type="button" class="layui-btn " id="verifyButton">\n' +
-            '                    <i class="layui-icon">&#xe67c;</i>上传文件\n' +
+            '                <button type="button" class="layui-btn upload-btn-whole" id="selectFile" style="width: 100px;">\n' +
+            '                    选择文件\n' +
             '                </button>\n' +
-            '                <button type="button" class="layui-btn upload-btn-whole" style="display: none" id="upload">\n' +
-            '                   真实的上传文件\n' +
+            '                <button type="button" class="layui-btn " id="selectFolder" style="width: 100px;">\n' +
+            '                    选择文件夹\n' +
             '                </button>\n' +
+            '                <div id="filename"></div>\n' +
             '            </div>\n' +
             '        </div>\n' +
             '        <div class="layui-form-item">\n' +
             '            <div class="layui-input-block margin-right">\n' +
-            '                <button class="layui-btn" lay-submit  lay-filter="formFile" id="submitfile1">提交</button>\n' +
+            '                <button class="layui-btn" lay-submit  lay-filter="formFile" id="submitfile1" style="width: 100px;background: #1e9fff;"><i class="layui-icon">&#xe67c;</i>提交</button>\n' +
+            '                <button class="layui-btn" lay-submit  lay-filter="formFile" id="submitfile2" style="width: 100px;background: #1e9fff;"><i class="layui-icon">&#xe67c;</i>提交</button>\n' +
             '                <button  class="layui-btn layui-btn-primary" id="submitfile" style="display: none">真实的提交</button>\n' +
-            '                <button type="reset" class="layui-btn layui-btn-primary" id="resetfile">重置</button>\n' +
+            '                <button type="reset" class="layui-btn layui-btn-primary" id="resetfile" style="margin-left: 0;width: 100px;">重置</button>\n' +
             '            </div>\n' +
             '        </div>\n' +
             '</div>', //调到文件信息页面
@@ -440,7 +451,7 @@
                         if(val){
                             document.getElementById("submitfile").click();
                         }else{
-                            layer.msg('请上传文件', {icon: 2})
+                            layer.msg('请选择文件', {icon: 2})
                         };
                         return false;
                     });
@@ -465,17 +476,85 @@
                 //     };
                 //     return true;
                 // };
-               //必填项验证后才可点击上传文件按钮
-                $("#verifyButton").click(function (){
-                    // let result = verify();
-                    // if(result){
-                        document.getElementById("upload").click();
-                    // }
+
+                //必填项验证后才可点击上传文件按钮
+                $("#selectFile").click(function (){
+                    $("#submitfile2").hide();
+                    // $("#filename").show();
+                });
+                var rootPath;
+                $("#submitfile2").click(function () {
+                    if(rootPath){
+                        var curPos = $('#tvFP').text();
+                        var faultName = $('input[name="faultName"]').val();
+                        var testType = $('input[name="testType"]').val();
+                        var device = $('input[name="device"]').val();
+                        var member = $('input[name="member"]').val();
+                        var degree = $('input[name="degree"]').val();
+                        var temperature = $('input[name="temperature"]').val();
+                        var pressure = $('input[name="pressure"]').val();
+                        var traffic = $('input[name="traffic"]').val();
+                        var loading=layer.msg("导入中，请稍候~",{icon:16,time:false,shade:0});
+                        $.ajax({
+                            url: baseServer + 'file/upload_folder',
+                            data: {
+                                rootPath,
+                                curPos ,
+                                faultName,
+                                testType,
+                                device ,
+                                member ,
+                                degree ,
+                                temperature,
+                                pressure,
+                                traffic
+                            },
+                            type: "post",
+                            success: function (res) {
+                                if (res.code == 200) {
+                                    layer.close(loading);
+                                    layer.msg(res.msg, {icon: 1});
+
+                                } else if (res.code == 500) {
+                                    layer.alert(res.msg,{
+                                        icon:5,
+                                        title:"提示"
+                                    });
+                                }
+                            }
+                        });
+                    }else{
+                        layer.msg('请选择文件', {icon: 2})
+                    };
+                    return false;
+                });
+                $("#selectFolder").click(function (){
+                    $("#submitfile2").show();
+                    // $("#filename").hide();
+
+                    layer.open({
+                        formType: 0,
+                        title: '请输入文件夹路径',
+                        area: ['400px', '160px'], //自定义文本域宽高
+                        closeBtn:'1',//右上角的关闭
+                        content: `<div class="layui-form">
+                                  <form class="layui-form form-container">
+                                  <input name="txt_remark" id="folder-name" style="width:96%"/>
+                                  </form>
+                                  </div>
+                                  `,
+                        btn:['确认','关闭'],
+                        yes: function (index) {
+                            rootPath = $('#folder-name').val();//获取文本框的值
+                            $("#filename").text(rootPath);
+                            layer.close(index);
+                        }
+                    });
 
                 });
                 //重置之后依然可提交
-                $("#")
-        })
+                // $("#")
+        });
 
         // 刷新
         $('#btnRefresh').click(function () {
@@ -569,11 +648,12 @@
                             '<div class="layui-form-item margin-left">试验程度：'+res.degree+'</div>'+
                             '<div class="layui-form-item margin-left">温度：'+res.temperature+'</div>'+
                             '<div class="layui-form-item margin-left">压力：'+res.pressure+'</div>'+
+                            '<div class="layui-form-item margin-left">流量：'+res.traffic+'</div>'+
                             '<div class="layui-form-item margin-left">试验路径：'+path+'</div>'
 
                     });
                 } else {
-                    layer.msg(res.msg, {icon: 2});
+                    layer.msg(res.msg, {icon: 1});
                 }
             });
         })
@@ -583,7 +663,7 @@
             layer.confirm('确定要删除此文件吗？', function () {
                 layer.load(2);
                 $.get(baseServer + 'api/del', {
-                    file: mUrl.substring(mUrl.indexOf('/file/') + 6)
+                    path: getRoot()
                 }, function (res) {
                     layer.closeAll('loading');
                     if (res.code == 200) {
@@ -643,29 +723,29 @@
         });
 
         // 新建文件夹
-        $('#btnNewDir').click(function () {
-            layer.prompt({
-                formType: 0,
-                value: "新建文件夹",
-                title: '文件名'
-            }, function(value, index, elem){
-                var curPos = $('#tvFP').text();
-                layer.load(2);
-                $.get(baseServer + 'api/mkdir', {
-                    curPos: curPos,
-                    dirName: value
-                }, function (res) {
-                    layer.closeAll('loading');
-                    if (res.code == 200) {
-                        layer.msg(res.msg, {icon: 1});
-                        renderList();
-                    } else {
-                        layer.msg(res.msg, {icon: 2});
-                    }
-                });
-                layer.close(index);
-            });
-        });
+        // $('#btnNewDir').click(function () {
+        //     layer.prompt({
+        //         formType: 0,
+        //         value: "新建文件夹",
+        //         title: '文件名'
+        //     }, function(value, index, elem){
+        //         var curPos = $('#tvFP').text();
+        //         layer.load(2);
+        //         $.get(baseServer + 'api/mkdir', {
+        //             curPos: curPos,
+        //             dirName: value
+        //         }, function (res) {
+        //             layer.closeAll('loading');
+        //             if (res.code == 200) {
+        //                 layer.msg(res.msg, {icon: 1});
+        //                 renderList();
+        //             } else {
+        //                 layer.msg(res.msg, {icon: 2});
+        //             }
+        //         });
+        //         layer.close(index);
+        //     });
+        // });
 
         // 删除当前目录
         $('#btnDelDir').click(function () {

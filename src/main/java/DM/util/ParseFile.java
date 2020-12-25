@@ -59,40 +59,17 @@ public class ParseFile {
 
         //时域数据信息
         List<List<Float>> domainLists = dataDomain(fis, channelLists);
-        if (domainLists.get(0).size() < 100000) {
-            fileData.setTooBigNums(true);
-            List<List<Float>> domainListTempS = new ArrayList<>();
-            List<Float> domainListTemp;
-            for (int i = 0; i < domainLists.size(); i++) {
-                domainListTemp = new ArrayList<>();
-                for (int j = 0, len = domainLists.get(i).size(); j < len; j += 100) {
-                    domainListTemp.add(domainLists.get(i).get(j));
-                }
-                domainListTempS.add(domainListTemp);
-            }
-            fileData.setTimeDomain(domainListTempS);
-            System.out.println("采样时域数据总用时：" + (System.currentTimeMillis() - start) + "ms");
+        fileData.setTimeDomain(domainLists);
 
-            //频域变换
-            System.out.println("开始FFT变换");
-            start = System.currentTimeMillis();
-            List<List<Float>> frequencyListTempS = fft_pure(domainListTempS, flag_evs);
-            fileData.setFrequencyDomain(frequencyListTempS);
-            System.out.println("FFT变换总用时：" + (System.currentTimeMillis() - start) + "ms");
-        } else {
-            fileData.setTimeDomain(domainLists);
+        System.out.println("未采样时域数据总用时：" + (System.currentTimeMillis() - start) + "ms");
 
-            System.out.println("未采样时域数据总用时：" + (System.currentTimeMillis() - start) + "ms");
+        //频域变换
+        System.out.println("开始FFT变换");
 
-            //频域变换
-            System.out.println("开始FFT变换");
-            start = System.currentTimeMillis();
+        List<List<Float>> frequencyLists = fft_pure(domainLists, flag_evs);
+        fileData.setFrequencyDomain(frequencyLists);
 
-            List<List<Float>> frequencyLists = fft_pure(domainLists, flag_evs);
-            fileData.setFrequencyDomain(frequencyLists);
-
-            System.out.println("FFT变换总用时：" + (System.currentTimeMillis() - start) + "ms");
-        }
+        System.out.println("FFT变换结束");
 
         //求取有效值
         List<Float> effectiveList = dataEffective(domainLists);
@@ -107,11 +84,7 @@ public class ParseFile {
         fileData.setVariance(varianceList);
 
 
-        //删除两个通道
-//        fileData.getTimeDomain().remove(0);
-//        fileData.getTimeDomain().remove(0);
-//        fileData.setFrequencyDomain(new ArrayList<>());
-//        fileData.setChannelNums(1);
+
         return fileData;
     }
 
@@ -300,9 +273,8 @@ public class ParseFile {
             start = System.currentTimeMillis();
             System.out.println("开始fft"+ index++ +"轮变换！");
             resTemp = fftM.fft_m(1, data.stream().mapToDouble(Float::floatValue).toArray());
-            System.out.print("一轮fft用时：");
+            System.out.print("fft用时：");
             System.out.println(System.currentTimeMillis()-start);
-            start = System.currentTimeMillis();
             MWNumericArray resTemp2 = (MWNumericArray) resTemp[0];
             double[][] re = (double[][]) resTemp2.toDoubleArray();
             double[][] imag = (double[][]) resTemp2.toImagDoubleArray();
@@ -311,7 +283,6 @@ public class ParseFile {
                 resTemp3.add((float) temp);
             }
             resFinal.add(resTemp3);
-            System.out.println("转换数据用时："+(System.currentTimeMillis()-start)+"ms");
         }
         return resFinal;
     }
